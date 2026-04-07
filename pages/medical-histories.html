@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Historia Clínica - VetFlow 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/medical-histories.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body style="background-color: #f8fafc;">
+    <div id="layout-wrapper">
+        <div id="app-content">
+            <div class="medical-scroll-container">
+
+                <!-- 1. BUSCADOR -->
+                <section class="section-search-v4">
+                    <div class="search-header-flex">
+                        <h2><i class="fas fa-search"></i> Buscador de Pacientes</h2>
+                        <div id="active-pet-indicator" class="badge-active-pet" style="display: none;">
+                            <i class="fas fa-paw"></i>
+                            <span id="name-banner">-</span>
+                            <button onclick="resetSearch()"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <div class="search-box-v4">
+                        <input type="text" id="search-pet"
+                            placeholder="Escribí nombre de mascota o apellido del dueño..." autocomplete="off">
+                    </div>
+                </section>
+
+                <!-- 2. RESULTADOS DE BÚSQUEDA (Intercalado) -->
+                <section id="search-results-section" class="search-grid-v4" style="display: none;">
+                    <!-- Dinámico -->
+                </section>
+
+                <!-- 3. FORMULARIO HERO (Siempre visible) -->
+                <section id="form-section" class="evolution-hero-card">
+                    <form id="form-consulta">
+                        <input type="hidden" id="cons-pet-id">
+                        <div class="hero-card-header">
+                            <div class="title-group">
+                                <h3><i class="fas fa-stethoscope"></i> Nueva Evolución Clínica</h3>
+                                <div class="date-chip" id="today-date">Hoy</div>
+                            </div>
+                            <button type="submit" id="btn-save-consult" class="btn-save-horizontal">
+                                <i class="fas fa-save" style="margin-right: 8px;"></i> GUARDAR REGISTRO
+                            </button>
+                        </div>
+
+                        <div class="hero-grid-body">
+                            <!-- Col Izquierda: Vitals -->
+                            <div class="hero-col-vitals">
+                                <div class="premium-group">
+                                    <label>Motivo de Consulta</label>
+                                    <div class="input-icon-field">
+                                        <i class="fas fa-tag"></i>
+                                        <input type="text" id="cons-motivo" placeholder="Ej: Control Post-Quirúrgico"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="vitals-row-v4">
+                                    <div class="premium-group"><label>Peso</label>
+                                        <div class="input-icon-field"><i class="fas fa-weight"></i><input type="number"
+                                                step="0.1" id="cons-peso" placeholder="0.0"></div>
+                                    </div>
+                                    <div class="premium-group"><label>Temp</label>
+                                        <div class="input-icon-field"><i class="fas fa-thermometer-half"></i><input
+                                                type="number" step="0.1" id="cons-temp" placeholder="0.0"></div>
+                                    </div>
+                                    <div class="premium-group"><label>FC</label>
+                                        <div class="input-icon-field"><i class="fas fa-heartbeat"></i><input
+                                                type="number" id="cons-fc" placeholder="0"></div>
+                                    </div>
+                                    <div class="premium-group"><label>FR</label>
+                                        <div class="input-icon-field"><i class="fas fa-wind"></i><input type="number"
+                                                id="cons-fr" placeholder="0"></div>
+                                    </div>
+                                </div>
+                                <div class="premium-group" style="margin-top: 15px;">
+                                    <label><i class="fas fa-paperclip"></i> Adjuntos (Estudios/Fotos)</label>
+                                    <input type="file" id="cons-files" class="custom-file-v4" multiple>
+                                </div>
+                            </div>
+
+                            <!-- Col Derecha: Textos -->
+                            <div class="hero-col-text">
+                                <div class="premium-group">
+                                    <label>Diagnóstico y Hallazgos</label>
+                                    <textarea id="cons-diagnostico" rows="4"
+                                        placeholder="Describa los hallazgos clínicos observados..." required></textarea>
+                                </div>
+                                <div class="premium-group">
+                                    <label>Tratamiento / Plan Sanitario</label>
+                                    <textarea id="cons-tratamiento" rows="3"
+                                        placeholder="Indicaciones, medicación y dosis..." required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- 4. HISTORIAL CLÍNICO -->
+                <section id="results-section" class="records-area-v4" style="display: none;">
+                    <div class="records-grid">
+                        <div class="timeline-v4">
+                            <h3 class="side-label"><i class="fas fa-history"></i> Historial de Evoluciones</h3>
+                            <div id="timeline-list"></div>
+                        </div>
+                        <div class="health-aside-v4">
+                            <div class="side-card">
+                                <div class="side-card-head">
+                                    <span>Vacunas</span>
+                                    <button class="btn-circular-add" onclick="openVaccineModal('vacuna')"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                                <div id="vaccine-list" class="mini-list"></div>
+                            </div>
+                            <div class="side-card">
+                                <div class="side-card-head">
+                                    <span>Antiparasitarios</span>
+                                    <button class="btn-circular-add" onclick="openVaccineModal('desparasitacion')"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                                <div id="parasite-list" class="mini-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. MENSAJE FINAL (Solo visible si no hay selección) -->
+                <div id="no-pet-context" class="no-selection-msg">
+                    <i class="fas fa-info-circle"></i>
+                    Se cargará el historial tras seleccionar una mascota arriba.
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PREVENCIÓN (FUERA DE TODO WRAPPER PARA EVITAR BLEEDING) -->
+    <div id="modal-prevencion" class="modal-overlay-v5" style="display: none;">
+        <div class="modal-card-v5">
+            <div class="modal-head-v5">
+                <h2 id="modal-prev-title">Nueva Carga</h2>
+                <button class="btn-close-v5" onclick="closeModal('modal-prevencion')"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <form id="form-prevencion" class="modal-form-v5">
+                <input type="hidden" id="prev-pet-id">
+                <input type="hidden" id="prev-tipo">
+                <div class="premium-group"><label>Producto</label><input type="text" id="prev-nombre" required></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                    <div class="premium-group"><label>Fecha</label><input type="date" id="prev-fecha" required></div>
+                    <div class="premium-group"><label>Próxima</label><input type="date" id="prev-proxima"></div>
+                </div>
+                <button type="submit" class="btn-modal-save">REGISTRAR</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="../js/layout.js"></script>
+    <script type="module" src="../js/medical-histories.js"></script>
+    <script>
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        window.resetSearch = () => window.location.href = 'medical-histories.html';
+        window.toggleRec = (el) => {
+            const body = el.nextElementSibling;
+            const icon = el.querySelector('.fa-chevron-down');
+            const isVisible = body.style.display === 'block';
+            body.style.display = isVisible ? 'none' : 'block';
+            if (icon) icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+    </script>
+</body>
+
+</html>

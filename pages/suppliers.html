@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Proveedores - VetFlow 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/suppliers.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="layout-wrapper">
+        <div id="app-content">
+            <div class="content-header-premium">
+                <div class="header-main">
+                    <h1><i class="fas fa-truck-loading"></i> Gestión de Proveedores</h1>
+                    <p>Administrá tu directorio de proveedores, rubros y relaciones comerciales.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="window.openSupplierModal()">
+                        <i class="fas fa-plus"></i> NUEVO PROVEEDOR
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Filtros -->
+            <section class="section-filters-premium">
+                <div class="filters-flex">
+                    <div class="search-field">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-supplier" placeholder="Buscar por nombre, rubro o contacto...">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tabla de Proveedores -->
+            <div class="table-card-premium">
+                <table class="premium-table-v5 full-width">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Nombre</th>
+                            <th>Categoría / Rubro</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th style="width: 80px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="suppliers-list">
+                        <!-- Dinámico -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Proveedor (Crear/Editar) -->
+    <div id="modal-supplier" class="modal">
+        <div class="modal-content-premium">
+            <div class="modal-header">
+                <h2 id="modal-title">Gestión de Proveedor</h2>
+                <button class="btn-close" onclick="closeModal('modal-supplier')"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-supplier" class="premium-form">
+                <input type="hidden" id="supp-id">
+                <div class="form-grid">
+                    <div class="form-group-premium full">
+                        <label>Empresa</label>
+                        <input type="text" id="supp-razon" required placeholder="Ej: Distribuidora Central S.A.">
+                    </div>
+                    <div class="form-group-premium full">
+                        <label>Email</label>
+                        <input type="email" id="supp-email" placeholder="contacto@empresa.com">
+                    </div>
+                    <div class="form-group-premium">
+                        <label>Nombre</label>
+                        <input type="text" id="supp-rubro" placeholder="Ej: Juan Perez">
+                    </div>
+                    <div class="form-group-premium">
+                        <label>Categoría / Rubro</label>
+                        <input type="text" id="supp-contacto" placeholder="Ej: Alimentos, Farmacia">
+                    </div>
+                    <div class="form-group-premium full">
+                        <label>Teléfono</label>
+                        <input type="text" id="supp-tel" placeholder="+54 9 11 ...">
+                    </div>
+                    <div class="form-group-premium full">
+                        <label>Observaciones</label>
+                        <textarea id="supp-obs" rows="2"
+                            placeholder="Notas adicionales sobre el proveedor..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary btn-full">GUARDAR PROVEEDOR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script type="module" src="../js/layout.js"></script>
+    <script type="module" src="../js/suppliers.js"></script>
+    <script>
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+    </script>
+</body>
+
+</html>

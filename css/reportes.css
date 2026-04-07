@@ -1,0 +1,499 @@
+/* Reportes Module - VetFlow 2.0 */
+
+/* ── Date Bar ─────────────────────────────────── */
+.report-date-bar {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #eef2f6;
+    padding: 14px 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.date-bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.date-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.date-group label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.04em;
+}
+
+.date-group input[type="date"] {
+    padding: 9px 13px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--primary);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.date-group input[type="date"]:focus {
+    border-color: var(--primary);
+    background: white;
+}
+
+.quick-ranges {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.quick-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-btn:hover,
+.quick-btn.active {
+    background: var(--grad-primary);
+    color: white;
+    border-color: transparent;
+}
+
+/* ── Tab Navigation ───────────────────────────── */
+.report-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 14px;
+    border: 1px solid #eef2f6;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.report-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+}
+
+.report-tab-btn i {
+    font-size: 0.9rem;
+}
+
+.report-tab-btn:hover {
+    background: #f1f5f9;
+    color: var(--primary);
+}
+
+.report-tab-btn.active {
+    background: var(--grad-primary);
+    color: white;
+    box-shadow: 0 4px 14px rgba(0, 96, 144, 0.3);
+}
+
+.badge-only-vet {
+    font-size: 0.55rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 12px;
+    background: rgba(0, 168, 132, 0.15);
+    color: #00a884;
+    letter-spacing: 0.03em;
+}
+
+.report-tab-btn.active .badge-only-vet {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+}
+
+/* ── Report Panel ─────────────────────────────── */
+.report-panel {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #eef2f6;
+    min-height: 420px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+}
+
+.report-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 80px 20px;
+    color: #cbd5e1;
+}
+
+.report-placeholder i {
+    font-size: 3.5rem;
+}
+
+.report-placeholder p {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+#report-content {
+    padding: 30px;
+    animation: fadeInUp 0.35s ease;
+}
+
+/* ── Report Header ────────────────────────────── */
+.report-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.report-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--grad-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.report-header h2 {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #1e293b;
+    margin: 0;
+}
+
+.report-header p {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 3px 0 0;
+}
+
+/* ── Summary Stats Row ────────────────────────── */
+.report-stats-row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.report-stat {
+    background: #f8fafc;
+    border: 1px solid #eef2f6;
+    border-radius: 12px;
+    padding: 14px 20px;
+    flex: 1;
+    min-width: 130px;
+    display: flex;
+    flex-direction: column;
+}
+
+.report-stat .r-label {
+    font-size: 0.63rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    margin-bottom: 5px;
+}
+
+.report-stat .r-value {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #1e293b;
+}
+
+.report-stat.highlight {
+    border-left: 4px solid var(--primary);
+    background: #f0f9ff;
+}
+
+.report-stat.highlight .r-value {
+    color: var(--primary);
+}
+
+.report-stat.green {
+    border-left: 4px solid var(--secondary);
+    background: #f0fdf9;
+}
+
+.report-stat.green .r-value {
+    color: var(--secondary);
+}
+
+.report-stat.red .r-value {
+    color: #ef4444;
+}
+
+/* ── Chart Container ──────────────────────────── */
+.chart-wrap {
+    position: relative;
+    height: 320px;
+    width: 100%;
+}
+
+/* ── Low Stock Table ──────────────────────────── */
+.low-stock-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.low-stock-table th {
+    text-align: left;
+    padding: 11px 16px;
+    background: #fbfcfe;
+    color: #94a3b8;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.low-stock-table td {
+    padding: 11px 16px;
+    font-size: 0.85rem;
+    color: #475569;
+    border-bottom: 1px solid #f8fafc;
+    vertical-align: middle;
+}
+
+.stock-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.stock-badge.critical {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.stock-badge.warning {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+/* ── Vet-only badge in header ─────────────────── */
+.vet-badge-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(0, 168, 132, 0.12);
+    color: #00a884;
+    font-size: 0.62rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* ── Client / Pet list ────────────────────────── */
+.simple-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.simple-list-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+    font-size: 0.85rem;
+}
+
+.simple-list-item .item-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--grad-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.simple-list-item .item-info {
+    flex: 1;
+}
+
+.simple-list-item .item-name {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.simple-list-item .item-sub {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 1px;
+}
+
+.item-date {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #cbd5e1;
+}
+
+/* ── Vaccine Alert pills ──────────────────────── */
+.vaccine-alert {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.vaccine-alert.urgent {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.vaccine-alert.soon {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+/* ── Loading state ────────────────────────────── */
+.report-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.report-loading i {
+    font-size: 1.2rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── Empty state ──────────────────────────────── */
+.report-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 60px 20px;
+    color: #cbd5e1;
+    text-align: center;
+}
+
+.report-empty i {
+    font-size: 2.5rem;
+}
+
+.report-empty p {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* ── Ingresos vs Costos ───────────────────────── */
+.comparison-legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.legend-dot {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+.legend-dot span {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+/* ── Responsive ───────────────────────────────── */
+@media (max-width: 768px) {
+    .report-stats-row {
+        flex-direction: column;
+    }
+
+    .date-bar-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .quick-ranges {
+        margin-left: 0;
+    }
+
+    .report-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+}

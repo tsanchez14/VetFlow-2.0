@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ventas y Facturación - VetFlow 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/sales.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="layout-wrapper">
+        <div id="app-content">
+            <div class="content-header-premium">
+                <div class="header-main">
+                    <h1><i class="fas fa-shopping-cart"></i> Ventas & Facturación</h1>
+                    <p>Gestioná ventas, servicios, historial de comprobantes y cierres de caja.</p>
+                </div>
+                <div class="header-tabs">
+                    <button class="tab-btn active" onclick="window.switchTab('pos')">NUEVA VENTA</button>
+                    <button class="tab-btn" onclick="window.switchTab('history')">HISTORIAL</button>
+                    <button class="tab-btn" onclick="window.switchTab('closure')">CIERRE DE CAJA</button>
+                </div>
+            </div>
+
+            <!-- TAB 1: POS (PUNTO DE VENTA) -->
+            <div id="tab-pos" class="tab-content active">
+                <!-- Buscador prominente SOLO en POS -->
+                <div class="header-search-v3">
+                    <div class="search-box-v3">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="pos-search-input"
+                            placeholder="Buscar producto por nombre o código para agregar al carrito...">
+                        <div id="pos-search-results" class="search-results-v3"></div>
+                    </div>
+                </div>
+                <div class="pos-container">
+                    <!-- Ahora el carrito ocupa todo el ancho o gran parte -->
+                    <div class="pos-cart-panel full-width">
+                        <div class="client-selector-card" id="client-container">
+                            <label><i class="fas fa-user"></i> Cliente (Opcional)</label>
+                            <select id="sale-client">
+                                <option value="">Consumidor Final</option>
+                                <!-- Dinámico -->
+                            </select>
+                        </div>
+
+                        <div class="cart-table-card">
+                            <table class="cart-table">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción / Producto</th>
+                                        <th style="width: 80px;">Cant.</th>
+                                        <th style="width: 120px;">Unit ($)</th>
+                                        <th style="width: 120px;">Subtotal</th>
+                                        <th style="width: 40px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart-items">
+                                    <!-- Dinámico -->
+                                </tbody>
+                            </table>
+                            <div id="empty-cart-msg" class="empty-state">El carrito está vacío</div>
+                        </div>
+
+                        <div class="pos-summary-footer">
+                            <div class="summary-details">
+                                <div class="payment-method">
+                                    <label>Medio de Pago</label>
+                                    <select id="sale-payment-method">
+                                        <option value="efectivo">Efectivo</option>
+                                        <option value="tarjeta">Tarjeta</option>
+                                        <option value="transferencia">Transferencia</option>
+                                    </select>
+                                </div>
+                                <div class="grand-total">
+                                    <span>TOTAL</span>
+                                    <h2 id="total-display">$0.00</h2>
+                                </div>
+                            </div>
+                            <button id="btn-confirm-sale" class="btn btn-primary btn-confirm"
+                                onclick="window.confirmSale()">
+                                <i class="fas fa-check-circle"></i> CONFIRMAR VENTA
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: HISTORIAL -->
+            <div id="tab-history" class="tab-content" style="display: none;">
+                <div class="history-filters">
+                    <div class="filter-group">
+                        <label>Desde</label>
+                        <input type="date" id="hist-date-from">
+                    </div>
+                    <div class="filter-group">
+                        <label>Hasta</label>
+                        <input type="date" id="hist-date-to">
+                    </div>
+                    <div class="filter-group">
+                        <label>Estado</label>
+                        <select id="hist-status">
+                            <option value="">Todos</option>
+                            <option value="pagado">Pagados</option>
+                            <option value="anulado">Anulados</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-card-premium">
+                    <table class="premium-table-v5 full-width">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Medio Pago</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: CIERRE DE CAJA -->
+            <div id="tab-closure" class="tab-content" style="display: none;">
+                <div class="closure-container">
+                    <div class="closure-header">
+                        <h2>Resumen diario: <span id="closure-date"></span></h2>
+                        <button class="btn btn-outline" onclick="window.loadClosure()"><i class="fas fa-sync"></i>
+                            Actualizar</button>
+                    </div>
+                    <div class="closure-grid" id="closure-results">
+                        <!-- Dinámico -->
+                    </div>
+                    <div class="closure-total-card compact">
+                        <span>TOTAL RECAUDADO DEL DÍA</span>
+                        <h2 id="closure-grand-total">$0.00</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE VENTA -->
+    <div id="modal-sale-detail" class="modal-overlay-v6" style="display: none;">
+        <div class="modal-card-v6">
+            <div class="modal-head-v6">
+                <h2>Detalle de Venta</h2>
+                <button class="btn-close-v6" onclick="window.closeModal('modal-sale-detail')"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div id="sale-detail-content"></div>
+            <div class="modal-footer-v6" id="modal-sale-footer">
+                <!-- Botón Anular aquí si aplica -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/layout.js"></script>
+    <script type="module" src="../js/sales.js"></script>
+    <script>
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tab).style.display = 'block';
+            document.querySelector(`[onclick="window.switchTab('${tab}')"]`).classList.add('active');
+        };
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    </script>
+</body>
+
+</html>

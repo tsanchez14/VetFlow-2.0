@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="pawGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00a884;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#006090;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(5, 5) scale(0.18)">
+    <circle cx="100" cy="80" r="50" fill="url(#pawGradient)" />
+    <circle cx="220" cy="50" r="45" fill="url(#pawGradient)" />
+    <circle cx="340" cy="80" r="45" fill="url(#pawGradient)" />
+    <circle cx="440" cy="180" r="50" fill="url(#pawGradient)" />
+    <path d="M270,150 C180,150 100,220 100,320 C100,400 180,450 270,450 C360,450 440,400 440,320 C440,220 360,150 270,150 Z" fill="url(#pawGradient)" />
+  </g>
+</svg>

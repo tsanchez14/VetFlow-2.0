@@ -1,0 +1,170 @@
+/* Layout System - VetFlow 2.0 */
+
+:root {
+    --sidebar-width: 260px;
+    --header-height: 70px;
+    --sidebar-bg: #ffffff;
+    --sidebar-hover: rgba(0, 96, 144, 0.05);
+}
+
+#layout-wrapper {
+    min-height: 100vh;
+}
+
+/* Sidebar */
+#layout-sidebar {
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--glass-border);
+    padding: 20px 0;
+    position: fixed;
+    width: var(--sidebar-width);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    box-shadow: var(--shadow-soft);
+}
+
+.sidebar-logo {
+    padding: 0 25px 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-logo img {
+    height: 35px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 25px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: var(--transition);
+    border-left: 4px solid transparent;
+}
+
+.sidebar-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.sidebar-link:hover {
+    background: var(--sidebar-hover);
+    color: var(--primary);
+}
+
+.sidebar-link.active {
+    background: var(--sidebar-hover);
+    color: var(--primary);
+    border-left-color: var(--primary);
+}
+
+/* Main Area */
+#layout-main {
+    margin-left: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header */
+#layout-header {
+    height: var(--header-height);
+    background: white;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+}
+
+.header-business-info h3 {
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Trial Banner */
+#trial-banner {
+    width: 100%;
+    padding: 8px 0;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    background: #f0f9ff;
+    color: var(--primary);
+    border-bottom: 1px solid rgba(0, 96, 144, 0.1);
+}
+
+#trial-banner.warning {
+    background: #fff7ed;
+    color: #c2410c;
+    border-bottom-color: #fdba74;
+}
+
+#trial-banner.critical {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-bottom-color: #fecaca;
+}
+
+/* App Content Area */
+#app-content {
+    padding: 30px;
+    flex: 1;
+    width: 100%;
+}
+
+/* Responsive (Tablet) */
+@media (max-width: 1024px) {
+    :root {
+        --sidebar-width: 80px;
+    }
+
+    .sidebar-link span {
+        display: none;
+    }
+
+    .sidebar-logo span {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    #layout-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    #layout-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    #layout-sidebar.open {
+        transform: translateX(0);
+    }
+
+    #layout-main {
+        margin-left: 0;
+    }
+}

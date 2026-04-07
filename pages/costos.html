@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Costos y Gastos - VetFlow 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/costos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="layout-wrapper">
+        <div id="app-content">
+            <div class="content-header-premium">
+                <div class="header-main">
+                    <h1><i class="fas fa-file-invoice-dollar"></i> Control de Gastos</h1>
+                    <p>Registrá tus egresos fijos y variables para mantener el control financiero.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="window.openCostModal()">
+                        <i class="fas fa-plus"></i> NUEVO GASTO
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard de Resumen Rápido (Compacto) -->
+            <div class="cost-summary-mini">
+                <div class="mini-stat">
+                    <span class="label">Gastos Fijos (Mes)</span>
+                    <span class="value" id="total-fijo">$ 0</span>
+                </div>
+                <div class="mini-stat">
+                    <span class="label">Gastos Variables (Mes)</span>
+                    <span class="value" id="total-variable">$ 0</span>
+                </div>
+                <div class="mini-stat highlighted">
+                    <span class="label">Total Egreso</span>
+                    <span class="value" id="total-mes">$ 0</span>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <section class="section-filters-premium">
+                <div class="filters-flex">
+                    <div class="search-field">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-cost" placeholder="Buscar por concepto o categoría...">
+                    </div>
+                    <div class="date-field">
+                        <input type="month" id="filter-month">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tabla de Costos -->
+            <div class="table-card-premium">
+                <table class="premium-table-v5 full-width">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Concepto</th>
+                            <th>Categoría</th>
+                            <th style="text-align: right;">Monto</th>
+                            <th style="width: 80px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="costs-list">
+                        <!-- Dinámico -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Gasto (Crear/Editar) -->
+    <div id="modal-cost" class="modal">
+        <div class="modal-content-premium">
+            <div class="modal-header">
+                <h2 id="modal-title">Registrar Gasto</h2>
+                <button class="btn-close" onclick="closeModal('modal-cost')"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-cost" class="premium-form">
+                <input type="hidden" id="cost-id">
+                <div class="form-grid">
+                    <div class="form-group-premium full">
+                        <label>Fecha</label>
+                        <input type="date" id="cost-date" required>
+                    </div>
+                    <div class="form-group-premium full">
+                        <label>Concepto / Descripción</label>
+                        <input type="text" id="cost-concepto" required
+                            placeholder="Ej: Pago de Alquiler, Compra de Insumos">
+                    </div>
+                    <div class="form-group-premium">
+                        <label>Tipo de Gasto</label>
+                        <select id="cost-tipo" required>
+                            <option value="fijo">Gasto Fijo</option>
+                            <option value="variable">Gasto Variable</option>
+                        </select>
+                    </div>
+                    <div class="form-group-premium">
+                        <label>Monto</label>
+                        <input type="number" step="0.01" id="cost-monto" required placeholder="0.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary btn-full">GUARDAR GASTO</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="../js/layout.js"></script>
+    <script type="module" src="../js/costos.js"></script>
+    <script>
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+    </script>
+</body>
+
+</html>

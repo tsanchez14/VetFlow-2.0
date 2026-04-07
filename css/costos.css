@@ -1,0 +1,257 @@
+/* Costs Module - Premium Compact v1.0 */
+
+/* 1. Mini Dashboard */
+.cost-summary-mini {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.mini-stat {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.mini-stat .label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.mini-stat .value {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #1e293b;
+}
+
+.mini-stat.highlighted {
+    border-left: 4px solid var(--primary);
+    background: #f0f9ff;
+}
+
+.mini-stat.highlighted .value {
+    color: var(--primary);
+}
+
+/* 2. Filters */
+.section-filters-premium {
+    background: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid #eef2f6;
+    margin-bottom: 20px;
+}
+
+.filters-flex {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-field {
+    position: relative;
+    flex: 2;
+}
+
+.search-field i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #cbd5e1;
+}
+
+.search-field input {
+    width: 100%;
+    padding: 10px 12px 10px 35px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 0.85rem;
+}
+
+.date-field input {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--primary);
+}
+
+/* 3. Table Decoration */
+.table-card-premium {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #eef2f6;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+}
+
+.premium-table-v5 {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.premium-table-v5 th {
+    text-align: left;
+    padding: 12px 20px;
+    background: #fbfcfe;
+    color: #94a3b8;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.premium-table-v5 td {
+    padding: 12px 20px;
+    font-size: 0.85rem;
+    color: #475569;
+    border-bottom: 1px solid #f8fafc;
+    vertical-align: middle;
+}
+
+/* Badges */
+.badge-category {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.badge-category.fijo {
+    background: #eff6ff;
+    color: #3b82f6;
+    border: 1px solid #dbeafe;
+}
+
+.badge-category.variable {
+    background: #fefce8;
+    color: #a16207;
+    border: 1px solid #fef9c3;
+}
+
+.cost-amount {
+    font-weight: 800;
+    color: #ef4444;
+}
+
+/* 4. Modal (Compact Pattern) */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content-premium {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25);
+    animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 10px;
+}
+
+.modal-header h2 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 0;
+}
+
+.btn-close {
+    background: #f8fafc;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.premium-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+.form-group-premium label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.form-group-premium input,
+.form-group-premium select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 0.9rem;
+}
+
+.btn-full {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: var(--grad-primary);
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 20px;
+}

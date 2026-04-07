@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00a884;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#006090;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Paw Icon Refined -->
+  <g transform="translate(5, 12) scale(0.14)">
+    <circle cx="100" cy="80" r="50" fill="url(#logoGradient)" />
+    <circle cx="220" cy="50" r="45" fill="url(#logoGradient)" />
+    <circle cx="340" cy="80" r="45" fill="url(#logoGradient)" />
+    <circle cx="440" cy="180" r="50" fill="url(#logoGradient)" />
+    <path d="M270,150 C180,150 100,220 100,320 C100,400 180,450 270,450 C360,450 440,400 440,320 C440,220 360,150 270,150 Z" fill="url(#logoGradient)" />
+  </g>
+  <!-- Clean Typography -->
+  <text x="85" y="58" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="48" letter-spacing="-2">
+    <tspan fill="#006090">Vet</tspan><tspan fill="#00a884">Flow</tspan>
+  </text>
+</svg>

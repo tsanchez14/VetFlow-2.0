@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Stock e Inventario - VetFlow 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/products.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="layout-wrapper">
+        <div id="app-content">
+            <div class="content-header-premium">
+                <div class="header-main">
+                    <h1><i class="fas fa-boxes"></i> Inventario & Stock</h1>
+                    <p>Gestioná tus productos, alertas de stock mínimo y trazabilidad de movimientos.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="window.openProductModal()">
+                        <i class="fas fa-plus"></i> NUEVO PRODUCTO
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard de Alertas Rápidas -->
+            <div class="stock-summary-cards">
+                <div class="summary-card">
+                    <i class="fas fa-exclamation-triangle warning"></i>
+                    <div class="summary-info">
+                        <span class="count" id="low-stock-count">0</span>
+                        <span class="label">Stock Bajo</span>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <i class="fas fa-box-open info"></i>
+                    <div class="summary-info">
+                        <span class="count" id="total-products-count">0</span>
+                        <span class="label">Total Productos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra de Filtros -->
+            <section class="section-filters-premium">
+                <div class="filters-flex">
+                    <div class="search-field">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-product" placeholder="Buscar por nombre o código...">
+                    </div>
+                    <div class="category-field">
+                        <select id="filter-category">
+                            <option value="">Todas las categorías</option>
+                            <option value="alimentos">Alimentos</option>
+                            <option value="farmacia">Farmacia</option>
+                            <option value="accesorios">Accesorios</option>
+                            <option value="higiene">Higiene</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Listado de Productos (Tabla Full Width) -->
+            <section class="section-product-list">
+                <div class="table-card-premium">
+                    <table class="premium-table-v5">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Stock Actual</th>
+                                <th>Mínimo</th>
+                                <th style="text-align: right;">Precio Venta</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-list-body">
+                            <!-- Dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- MODAL PRODUCTO -->
+    <div id="modal-producto" class="modal-overlay-v6" style="display: none;">
+        <div class="modal-card-v6">
+            <div class="modal-head-v6">
+                <h2 id="modal-title">Gestión de Producto</h2>
+                <button class="btn-close-v6" onclick="closeModal('modal-producto')"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <form id="form-producto" class="modal-form-v6">
+                <input type="hidden" id="prod-id">
+                <div class="form-grid-v6">
+                    <div class="v6-group full">
+                        <label>Nombre del Producto</label>
+                        <input type="text" id="prod-nombre" required placeholder="Ej: Bolsa Alimento Perro Adulto 15kg">
+                    </div>
+                    <div class="v6-group">
+                        <label>Código / SKU</label>
+                        <input type="text" id="prod-codigo" placeholder="Ej: 779123456789">
+                    </div>
+                    <div class="v6-group">
+                        <label>Categoría</label>
+                        <select id="prod-categoria" required>
+                            <option value="alimentos">Alimentos</option>
+                            <option value="farmacia">Farmacia</option>
+                            <option value="accesorios">Accesorios</option>
+                            <option value="higiene">Higiene</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="v6-group">
+                        <label>Stock Mínimo</label>
+                        <input type="number" id="prod-minimo" value="0">
+                    </div>
+                    <div class="v6-group">
+                        <label>Unidad</label>
+                        <input type="text" id="prod-unidad" placeholder="Unid, Kg, Ml">
+                    </div>
+                    <div class="v6-group">
+                        <label>Costo</label>
+                        <input type="number" step="0.01" id="prod-costo" value="0">
+                    </div>
+                    <div class="v6-group">
+                        <label>Venta</label>
+                        <input type="number" step="0.01" id="prod-venta" value="0">
+                    </div>
+                </div>
+                <button type="submit" class="btn-v6-save">GUARDAR PRODUCTO</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL MOVIMIENTOS -->
+    <div id="modal-movimientos" class="modal-overlay-v6" style="display: none;">
+        <div class="modal-card-v6 large">
+            <div class="modal-head-v6">
+                <h2>Historial: <span id="mov-prod-nombre"></span></h2>
+                <button class="btn-close-v6" onclick="closeModal('modal-movimientos')"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="mov-layout-v6">
+                <!-- Ajuste Rapido -->
+                <div class="mov-aside">
+                    <h3>Ajuste de Stock</h3>
+                    <form id="form-ajuste" class="modal-form-v6">
+                        <div class="v6-group">
+                            <label>Tipo</label>
+                            <select id="ajuste-tipo" required>
+                                <option value="entrada">Entrada (+)</option>
+                                <option value="ajuste">Ajuste (+/-)</option>
+                            </select>
+                        </div>
+                        <div class="v6-group">
+                            <label>Cantidad</label>
+                            <input type="number" step="0.1" id="ajuste-cantidad" required>
+                        </div>
+                        <div class="v6-group">
+                            <label>Obsevación</label>
+                            <textarea id="ajuste-obs" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn-v6-save">REGISTRAR</button>
+                    </form>
+                </div>
+                <!-- Timeline -->
+                <div class="mov-main">
+                    <h3>Movimientos Recientes</h3>
+                    <div id="movimientos-list" class="timeline-v6"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/layout.js"></script>
+    <script type="module" src="../js/products.js"></script>
+    <script>
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+
+        // Cierre de dropdowns al hacer clic fuera
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.actions-dropdown')) {
+                document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
+            }
+        });
+    </script>
+</body>
+
+</html>
