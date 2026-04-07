@@ -395,3 +395,109 @@ footer {
         justify-content: center;
     }
 }
+
+/* --- UI Helpers (Toast & Loader) --- */
+
+/* Loader */
+#global-loader {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+#global-loader.active {
+    opacity: 1;
+    pointer-events: all;
+}
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid rgba(0, 96, 144, 0.1);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Toast Notification */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background: var(--white);
+    color: var(--text-main);
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transform: translateX(120%);
+    opacity: 0;
+    animation: slideInToast 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    min-width: 280px;
+    border-left: 6px solid var(--primary);
+}
+
+.toast.hiding {
+    animation: slideOutToast 0.4s ease forwards;
+}
+
+.toast-success {
+    border-left-color: var(--secondary);
+}
+.toast-success i {
+    color: var(--secondary);
+}
+
+.toast-error {
+    border-left-color: #e11d48;
+}
+.toast-error i {
+    color: #e11d48;
+}
+
+.toast-icon {
+    font-size: 1.2rem;
+}
+
+.toast-close {
+    margin-left: auto;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+.toast-close:hover {
+    color: var(--text-main);
+}
+
+@keyframes slideInToast {
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+@keyframes slideOutToast {
+    to {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+}

@@ -1,18 +1,9 @@
 import { supabase } from './supabase.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 
 // DOM Elements
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
-const messageBox = document.getElementById('message-box');
-
-/**
- * Muestra un mensaje en pantalla (éxito o error)
- */
-function showMessage(text, type = 'error') {
-    messageBox.innerText = text;
-    messageBox.className = type === 'error' ? 'error' : 'success';
-    messageBox.classList.remove('hidden');
-}
 
 /**
  * Lógica de REGISTRO
@@ -25,6 +16,7 @@ registerForm.onsubmit = async (e) => {
     const password = document.getElementById('reg-password').value;
 
     try {
+        showLoading();
         // 1. Crear usuario en Auth
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email,
@@ -52,7 +44,7 @@ registerForm.onsubmit = async (e) => {
 
         if (tenantError) throw tenantError;
 
-        showMessage("¡Cuenta creada! Redirigiendo...", "success");
+        showToast("¡Cuenta creada! Redirigiendo...", "success");
 
         // Redirigir según el correo
         setTimeout(() => {
@@ -65,7 +57,9 @@ registerForm.onsubmit = async (e) => {
 
     } catch (err) {
         console.error("Error en registro:", err);
-        showMessage(err.message || "Error al registrarse.");
+        showToast(err.message || "Error al registrarse.", "error");
+    } finally {
+        hideLoading();
     }
 };
 
@@ -78,6 +72,7 @@ loginForm.onsubmit = async (e) => {
     const password = document.getElementById('login-password').value;
 
     try {
+        showLoading();
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password
@@ -97,11 +92,10 @@ loginForm.onsubmit = async (e) => {
         const hoy = new Date();
         const trialFin = new Date(tenant.trial_fin);
 
-        // Lógica de redirección según estado
+        // Modificamos el estado o enviamos alert si está vencido
         if (tenant.estado === 'suspendido') {
             await supabase.auth.signOut();
-            showMessage("Tu cuenta ha sido suspendida. Contactá al soporte.");
-            return;
+            throw new Error("Tu cuenta ha sido suspendida. Contactá al soporte.");
         }
 
         if (tenant.estado === 'trial_vencido' || (tenant.estado === 'trial' && trialFin < hoy)) {
@@ -109,21 +103,18 @@ loginForm.onsubmit = async (e) => {
             if (tenant.estado === 'trial') {
                 await supabase.from('tenants').update({ estado: 'trial_vencido' }).eq('id', tenant.id);
             }
-            // Mostrar mensaje y bloquear (podríamos redirigir a una página de 'vencido')
-            showMessage("Tu período de prueba ha vencido. Contactá al proveedor para continuar.");
+            // Mostrar mensaje y bloquear
             await supabase.auth.signOut();
-            return;
+            throw new Error("Tu período de prueba ha vencido. Contactá al proveedor para continuar.");
         }
 
-        // Redirección condicional: Admin vs Cliente
-        if (email === 'tsanchez.scz@gmail.com') {
-            window.location.href = 'admin/index.html';
-        } else {
-            window.location.href = 'pages/dashboard.html';
-        }
-
+        showToast("Iniciando sesión...", "success");
+        // No redirigimos aquí manualmente porque supabase.js globalAuthListener se encarga de saltar la pag vía 'SIGNED_IN'.
+        
     } catch (err) {
         console.error("Error en login:", err);
-        showMessage(err.message || "Credenciales incorrectas.");
+        showToast(err.message || "Credenciales incorrectas.", "error");
+    } finally {
+        hideLoading();
     }
 };

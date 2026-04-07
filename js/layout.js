@@ -23,7 +23,7 @@ async function initLayout() {
     // 1. Verificar Sesión
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-        window.location.href = '../index.html#login';
+        window.location.href = '../login.html';
         return;
     }
 
@@ -36,6 +36,31 @@ async function initLayout() {
 
     if (tenantError || !tenant) {
         console.error("Error fetching tenant:", tenantError);
+        return;
+    }
+
+    // Suspensión check
+    if (tenant.estado === 'suspendido') {
+        window.forceLogout = async () => {
+            await supabase.auth.signOut();
+            window.location.href = '../login.html';
+        };
+
+        const contactPhone = "+54 9 11 1234-5678"; // Placeholder del proveedor
+        document.body.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#f8fafc;font-family:Inter,sans-serif;text-align:center;padding:20px;">
+                <i class="fas fa-ban" style="font-size:4rem;color:#ef4444;margin-bottom:20px;"></i>
+                <h1 style="color:#1e293b;margin-bottom:10px;">Cuenta Suspendida</h1>
+                <p style="color:#475569;font-size:1.1rem;margin-bottom:20px;">Tu cuenta ha sido deshabilitada por el administrador.</p>
+                <div style="background:#fff;padding:20px 30px;border-radius:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:30px;">
+                    <p style="margin:0;font-weight:600;color:#006090;font-size:1.2rem;">Comunicate con tu proveedor</p>
+                    <p style="margin:10px 0 0 0;font-size:1.5rem;font-weight:700;color:#1e293b;"><i class="fab fa-whatsapp"></i> ${contactPhone}</p>
+                </div>
+                <button onclick="window.forceLogout()" class="btn btn-outline" style="min-width: 200px;">
+                    Volver al login
+                </button>
+            </div>
+        `;
         return;
     }
 
@@ -143,7 +168,7 @@ function setupLogout() {
             window.layoutData = null;
             window.layoutIsReady = false;
             await supabase.auth.signOut();
-            window.location.href = '../index.html#login';
+            window.location.href = '../login.html';
         };
     }
 }

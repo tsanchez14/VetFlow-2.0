@@ -1,4 +1,5 @@
 import { supabase, getTenantId } from './supabase.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 
 /**
  * Sales & Invoicing - VetFlow 2.0
@@ -192,6 +193,7 @@ window.confirmSale = async () => {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...';
 
     try {
+        showLoading();
         const tenantId = await getTenantId();
         const clientId = document.getElementById('sale-client')?.value || null;
         const total = cart.reduce((acc, item) => acc + (item.qty * item.price), 0);
@@ -242,62 +244,73 @@ window.confirmSale = async () => {
             }
         }
 
-        alert("Venta confirmada exitosamente!");
+        showToast("Venta confirmada exitosamente!", "success");
         cart = [];
         renderCart();
         loadProducts(); // Refrescar stock local
         loadHistory();
     } catch (err) {
         console.error(err);
-        alert("Error al procesar venta: " + err.message);
+        showToast("Error al procesar venta: " + err.message, "error");
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-check-circle"></i> CONFIRMAR VENTA';
+        hideLoading();
     }
 };
 
 // === HISTORY & CLOSURE ===
 
 async function loadHistory() {
-    const tenantId = await getTenantId();
-    const from = document.getElementById('hist-date-from').value;
-    const to = document.getElementById('hist-date-to').value + 'T23:59:59';
-    const status = document.getElementById('hist-status').value;
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const from = document.getElementById('hist-date-from').value;
+        const to = document.getElementById('hist-date-to').value + 'T23:59:59';
+        const status = document.getElementById('hist-status').value;
 
-    let query = supabase
-        .from('sales')
-        .select('*, clients(nombre, apellido)')
-        .eq('tenant_id', tenantId)
-        .gte('fecha', from)
-        .lte('fecha', to)
-        .order('fecha', { ascending: false });
+        let query = supabase
+            .from('sales')
+            .select('*, clients(nombre, apellido)')
+            .eq('tenant_id', tenantId)
+            .gte('fecha', from)
+            .lte('fecha', to)
+            .order('fecha', { ascending: false });
 
-    if (status) query = query.eq('estado', status);
+        if (status) query = query.eq('estado', status);
 
-    const { data } = await query;
-    const list = document.getElementById('history-list');
+        const { data, error } = await query;
+        if (error) throw error;
+        
+        const list = document.getElementById('history-list');
 
-    if (!data || data.length === 0) {
-        list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay ventas en este período.</td></tr>';
-        return;
+        if (!data || data.length === 0) {
+            list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay ventas en este período.</td></tr>';
+            return;
+        }
+
+        list.innerHTML = data.map(s => `
+            <tr onclick="window.viewSaleDetail('${s.id}')">
+                <td>
+                    <span class="history-date">${new Date(s.fecha).toLocaleDateString()}</span><br>
+                    <small style="color: #cbd5e1;">${new Date(s.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} hs</small>
+                </td>
+                <td>
+                    <span class="history-client">${s.clients ? s.clients.nombre + ' ' + s.clients.apellido : 'Consumidor Final'}</span>
+                    <small style="color: #94a3b8;">${s.id.substring(0, 8).toUpperCase()}</small>
+                </td>
+                <td><span class="history-total">$${s.total.toLocaleString()}</span></td>
+                <td><span class="badge-method">${s.medio_pago}</span></td>
+                <td><span class="badge-status ${s.estado}">${s.estado}</span></td>
+                <td style="text-align: right;"><button class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></button></td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error(err);
+        showToast("Error al cargar historial", "error");
+    } finally {
+        hideLoading();
     }
-
-    list.innerHTML = data.map(s => `
-        <tr onclick="window.viewSaleDetail('${s.id}')">
-            <td>
-                <span class="history-date">${new Date(s.fecha).toLocaleDateString()}</span><br>
-                <small style="color: #cbd5e1;">${new Date(s.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} hs</small>
-            </td>
-            <td>
-                <span class="history-client">${s.clients ? s.clients.nombre + ' ' + s.clients.apellido : 'Consumidor Final'}</span>
-                <small style="color: #94a3b8;">${s.id.substring(0, 8).toUpperCase()}</small>
-            </td>
-            <td><span class="history-total">$${s.total.toLocaleString()}</span></td>
-            <td><span class="badge-method">${s.medio_pago}</span></td>
-            <td><span class="badge-status ${s.estado}">${s.estado}</span></td>
-            <td style="text-align: right;"><button class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></button></td>
-        </tr>
-    `).join('');
 }
 
 window.viewSaleDetail = async (id) => {
@@ -344,73 +357,89 @@ window.viewSaleDetail = async (id) => {
 window.annulSale = async (id) => {
     if (!confirm("¿Seguro que deseás anular esta venta? El stock se restaurará.")) return;
 
-    const tenantId = await getTenantId();
-    const { data: sale } = await supabase.from('sales').select('*, sale_items(*)').eq('id', id).eq('tenant_id', tenantId).single();
-    if (!sale) { console.error('Sale not found or unauthorized'); return; }
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const { data: sale, error: saleErr } = await supabase.from('sales').select('*, sale_items(*)').eq('id', id).eq('tenant_id', tenantId).single();
+        if (saleErr) throw saleErr;
+        if (!sale) throw new Error('Venta no encontrada o sin autorización');
 
-    // 1. Anular Venta
-    await supabase.from('sales').update({ estado: 'anulado' }).eq('id', id).eq('tenant_id', tenantId);
+        // 1. Anular Venta
+        const { error: updErr } = await supabase.from('sales').update({ estado: 'anulado' }).eq('id', id).eq('tenant_id', tenantId);
+        if (updErr) throw updErr;
 
-    // 2. Restaurar Stock
-    for (const item of sale.sale_items) {
-        if (item.product_id) {
-            const { data: p } = await supabase.from('products').select('stock_actual').eq('id', item.product_id).single();
-            const nuevoStock = (p.stock_actual || 0) + item.cantidad;
-            await supabase.from('products').update({ stock_actual: nuevoStock }).eq('id', item.product_id);
+        // 2. Restaurar Stock
+        for (const item of sale.sale_items) {
+            if (item.product_id) {
+                const { data: p } = await supabase.from('products').select('stock_actual').eq('id', item.product_id).single();
+                const nuevoStock = (p.stock_actual || 0) + item.cantidad;
+                await supabase.from('products').update({ stock_actual: nuevoStock }).eq('id', item.product_id);
 
-            // Registrar movimiento de restauración
-            const tenantId = await getTenantId();
-            await supabase.from('stock_movimientos').insert({
-                tenant_id: tenantId,
-                product_id: item.product_id,
-                tipo: 'ajuste',
-                cantidad: item.cantidad,
-                observacion: `Anulación Venta #${id.substring(0, 8)}`
-            });
+                // Registrar movimiento de restauración
+                await supabase.from('stock_movimientos').insert({
+                    tenant_id: tenantId,
+                    product_id: item.product_id,
+                    tipo: 'ajuste',
+                    cantidad: item.cantidad,
+                    observacion: `Anulación Venta #${id.substring(0, 8)}`
+                });
+            }
         }
-    }
 
-    alert("Venta anulada y stock restaurado.");
-    window.closeModal('modal-sale-detail');
-    loadHistory();
-    loadProducts();
+        showToast("Venta anulada y stock restaurado.", "success");
+        window.closeModal('modal-sale-detail');
+        loadHistory();
+        loadProducts();
+    } catch (err) {
+        console.error(err);
+        showToast("Error al anular: " + err.message, "error");
+    } finally {
+        hideLoading();
+    }
 };
 
 window.loadClosure = async () => {
-    const tenantId = await getTenantId();
-    const today = new Date().toISOString().split('T')[0];
-    const { data } = await supabase
-        .from('sales')
-        .select('total, medio_pago')
-        .eq('tenant_id', tenantId)
-        .eq('estado', 'pagado')
-        .gte('fecha', today);
+    try {
+        const tenantId = await getTenantId();
+        const today = new Date().toISOString().split('T')[0];
+        const { data, error } = await supabase
+            .from('sales')
+            .select('total, medio_pago')
+            .eq('tenant_id', tenantId)
+            .eq('estado', 'pagado')
+            .gte('fecha', today);
+            
+        if (error) throw error;
 
-    const summary = {
-        efectivo: 0,
-        tarjeta: 0,
-        transferencia: 0
-    };
+        const summary = {
+            efectivo: 0,
+            tarjeta: 0,
+            transferencia: 0
+        };
 
-    let grandTotal = 0;
-    if (data) {
-        data.forEach(s => {
-            if (summary[s.medio_pago] !== undefined) {
-                summary[s.medio_pago] += s.total;
-            }
-            grandTotal += s.total;
-        });
+        let grandTotal = 0;
+        if (data) {
+            data.forEach(s => {
+                if (summary[s.medio_pago] !== undefined) {
+                    summary[s.medio_pago] += s.total;
+                }
+                grandTotal += s.total;
+            });
+        }
+
+        document.getElementById('closure-date').innerText = new Date().toLocaleDateString();
+        document.getElementById('closure-grand-total').innerText = `$${grandTotal.toLocaleString()}`;
+
+        document.getElementById('closure-results').innerHTML = Object.keys(summary).map(method => `
+            <div class="closure-card">
+                <span class="method">${method}</span>
+                <span class="amount">$${summary[method].toLocaleString()}</span>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error(err);
+        showToast("Error al cargar cierre", "error");
     }
-
-    document.getElementById('closure-date').innerText = new Date().toLocaleDateString();
-    document.getElementById('closure-grand-total').innerText = `$${grandTotal.toLocaleString()}`;
-
-    document.getElementById('closure-results').innerHTML = Object.keys(summary).map(method => `
-        <div class="closure-card">
-            <span class="method">${method}</span>
-            <span class="amount">$${summary[method].toLocaleString()}</span>
-        </div>
-    `).join('');
 };
 
 window.addEventListener('layoutReady', () => {

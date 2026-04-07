@@ -1,17 +1,24 @@
 {
   "name": "vetflow-2.0",
   "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "homepage": "https://github.com/tsanchez14/VetFlow-2.0#readme",
+  "bugs": {
+    "url": "https://github.com/tsanchez14/VetFlow-2.0/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tsanchez14/VetFlow-2.0.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "vite": "^6.4.1"
   },
   "dependencies": {
     "esbuild": "^0.25.12",
@@ -24,5 +31,7 @@
     "source-map-js": "^1.2.1",
     "tinyglobby": "^0.2.15"
   },
-  "description": ""
+  "devDependencies": {
+    "vite": "^6.4.1"
+  }
 }

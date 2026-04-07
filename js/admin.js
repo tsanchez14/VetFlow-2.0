@@ -1,11 +1,12 @@
 import { supabase } from './supabase.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 // CONFIGURACIÓN CRÍTICA: Service Role Key
 // ADVERTENCIA: Esta key tiene acceso total y NUNCA debe estar en el frontend en un entorno real.
 // Se usa aquí solo para fines de demostración administrativa local.
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhZm1qbXNxbXRlaHdnbG56bnZnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTI1Mzg2NiwiZXhwIjoyMDkwODI5ODY2fQ.4EgZhHlpaCVBOmd9R6iwxoZR7tCDQcOL_zK7cFGx80M';
-const SUPABASE_URL = 'https://yafmjmsqmtehwglnznvg.supabase.co';
+const SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 // Cliente Admin (bypass RLS)
 const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
@@ -29,8 +30,8 @@ async function checkAdminAccess() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user || user.email !== ADMIN_EMAIL) {
-        alert("Acceso denegado. Redirigiendo...");
-        window.location.href = '../index.html#login';
+        showToast("Acceso denegado. Redirigiendo...", "error");
+        setTimeout(() => window.location.href = '../login.html', 1500);
         return;
     }
     adminInfo.innerText = `Admin: ${user.email}`;
@@ -126,13 +127,22 @@ window.changeStatus = async (id, newStatus) => {
     const action = newStatus === 'activo' ? 'ACTIVAR' : 'DESHABILITAR';
     if (!confirm(`¿Estás seguro de que querés ${action} este negocio?`)) return;
 
-    const { error } = await supabaseAdmin
-        .from('tenants')
-        .update({ estado: newStatus })
-        .eq('id', id);
+    try {
+        showLoading();
+        const { error } = await supabaseAdmin
+            .from('tenants')
+            .update({ estado: newStatus })
+            .eq('id', id);
 
-    if (error) alert("Error: " + error.message);
-    else loadTenants();
+        if (error) throw error;
+        showToast("Estado actualizado correctamente", "success");
+        loadTenants();
+    } catch (err) {
+        console.error(err);
+        showToast("Error: " + err.message, "error");
+    } finally {
+        hideLoading();
+    }
 };
 
 /**
@@ -176,14 +186,22 @@ document.getElementById('save-note').onclick = async () => {
     const nota = newNoteInput.innerText || newNoteInput.value;
     if (!nota.trim()) return;
 
-    const { error } = await supabaseAdmin
-        .from('tenant_notas')
-        .insert({ tenant_id: currentTenantIdForNotes, nota });
+    try {
+        showLoading();
+        const { error } = await supabaseAdmin
+            .from('tenant_notas')
+            .insert({ tenant_id: currentTenantIdForNotes, nota });
 
-    if (error) alert("Error guardando nota.");
-    else {
+        if (error) throw error;
+        
+        showToast("Nota guardada", "success");
         newNoteInput.value = '';
         loadNotes(currentTenantIdForNotes);
+    } catch (err) {
+        console.error(err);
+        showToast("Error guardando nota.", "error");
+    } finally {
+        hideLoading();
     }
 };
 
@@ -191,7 +209,7 @@ document.getElementById('close-modal').onclick = () => notesModal.classList.add(
 
 document.getElementById('logout-btn').onclick = async () => {
     await supabase.auth.signOut();
-    window.location.href = '../index.html#login';
+    window.location.href = '../login.html';
 };
 
 // Start

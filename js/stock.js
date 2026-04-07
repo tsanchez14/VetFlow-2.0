@@ -1,4 +1,5 @@
 import { supabase, getTenantId } from './supabase.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 
 /**
  * Stock & Inventory Management - VetFlow 2.0
@@ -32,21 +33,28 @@ async function init() {
 }
 
 async function loadProducts() {
-    const tenantId = await getTenantId();
-    const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('nombre', { ascending: true });
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .eq('tenant_id', tenantId)
+            .order('nombre', { ascending: true });
 
-    if (error) {
-        console.error("Error loading products:", error);
-        return;
+        if (error) {
+            throw error;
+        }
+
+        allProducts = data || [];
+        updateSummary();
+        renderProducts();
+    } catch (err) {
+        console.error("Error loading products:", err);
+        showToast("Error al cargar productos", "error");
+    } finally {
+        hideLoading();
     }
-
-    allProducts = data || [];
-    updateSummary();
-    renderProducts();
 }
 
 function updateSummary() {
@@ -120,32 +128,43 @@ window.openProductModal = (id = null) => {
 
 async function handleSaveProduct(e) {
     e.preventDefault();
-    const tenantId = await getTenantId();
-    const id = document.getElementById('prod-id').value;
-
-    const productData = {
-        tenant_id: tenantId,
-        nombre: document.getElementById('prod-nombre').value,
-        categoria: document.getElementById('prod-categoria').value,
-        unidad_medida: document.getElementById('prod-unidad').value,
-        stock_minimo: parseFloat(document.getElementById('prod-minimo').value) || 0,
-        precio_costo: parseFloat(document.getElementById('prod-costo').value) || 0,
-        precio_venta: parseFloat(document.getElementById('prod-venta').value) || 0
-    };
-
-    let error;
-    if (id) {
-        const res = await supabase.from('products').update(productData).eq('id', id);
-        error = res.error;
-    } else {
-        const res = await supabase.from('products').insert({ ...productData, stock_actual: 0 });
-        error = res.error;
+    if (!e.target.checkValidity()) {
+        e.target.reportValidity();
+        return;
     }
 
-    if (error) alert("Error salvando producto: " + error.message);
-    else {
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const id = document.getElementById('prod-id').value;
+
+        const productData = {
+            tenant_id: tenantId,
+            nombre: document.getElementById('prod-nombre').value,
+            categoria: document.getElementById('prod-categoria').value,
+            unidad_medida: document.getElementById('prod-unidad').value,
+            stock_minimo: parseFloat(document.getElementById('prod-minimo').value) || 0,
+            precio_costo: parseFloat(document.getElementById('prod-costo').value) || 0,
+            precio_venta: parseFloat(document.getElementById('prod-venta').value) || 0
+        };
+
+        if (id) {
+            const { error: resErr } = await supabase.from('products').update(productData).eq('id', id);
+            if (resErr) throw resErr;
+            showToast("Producto actualizado exitosamente", "success");
+        } else {
+            const { error: resErr } = await supabase.from('products').insert({ ...productData, stock_actual: 0 });
+            if (resErr) throw resErr;
+            showToast("Producto creado exitosamente", "success");
+        }
+
         window.closeModal('modal-producto');
         loadProducts();
+    } catch (err) {
+        console.error(err);
+        showToast("Error salvando producto: " + err.message, "error");
+    } finally {
+        hideLoading();
     }
 }
 
@@ -197,46 +216,61 @@ async function loadMovements(productId) {
 
 async function handleSaveAdjustment(e) {
     e.preventDefault();
+    if (!e.target.checkValidity()) {
+        e.target.reportValidity();
+        return;
+    }
     if (!activeProductIdForMov) return;
 
     const btn = e.target.querySelector('button[type="submit"]');
     btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-    const tenantId = await getTenantId();
-    const tipo = document.getElementById('ajuste-tipo').value;
-    let cantidad = parseFloat(document.getElementById('ajuste-cantidad').value);
-    const obs = document.getElementById('ajuste-obs').value;
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const tipo = document.getElementById('ajuste-tipo').value;
+        let cantidad = parseFloat(document.getElementById('ajuste-cantidad').value);
+        const obs = document.getElementById('ajuste-obs').value;
 
-    // En ajustes de entrada la cantidad es positiva siempre. 
-    // Si el usuario quiere restar debería ser un ajuste negativo? 
-    // Por simplicidad: entrada = suma, ajuste = el valor que ponga el usuario (puede ser negativo para restar).
+        // En ajustes de entrada la cantidad es positiva siempre. 
+        // Si el usuario quiere restar debería ser un ajuste negativo? 
+        // Por simplicidad: entrada = suma, ajuste = el valor que ponga el usuario (puede ser negativo para restar).
 
-    const movData = {
-        tenant_id: tenantId,
-        product_id: activeProductIdForMov,
-        tipo: tipo,
-        cantidad: cantidad,
-        observacion: obs
-    };
+        const movData = {
+            tenant_id: tenantId,
+            product_id: activeProductIdForMov,
+            tipo: tipo,
+            cantidad: cantidad,
+            observacion: obs
+        };
 
-    // 1. Insertar Movimiento
-    const { error: movErr } = await supabase.from('stock_movimientos').insert(movData);
+        // 1. Insertar Movimiento
+        const { error: movErr } = await supabase.from('stock_movimientos').insert(movData);
 
-    if (movErr) {
-        alert("Error al registrar movimiento: " + movErr.message);
-    } else {
+        if (movErr) {
+            throw movErr;
+        }
+
         // 2. Actualizar stock en producto
         const p = allProducts.find(item => item.id === activeProductIdForMov);
         const nuevoStock = (p.stock_actual || 0) + cantidad;
 
-        await supabase.from('products').update({ stock_actual: nuevoStock }).eq('id', activeProductIdForMov);
+        const { error: updErr } = await supabase.from('products').update({ stock_actual: nuevoStock }).eq('id', activeProductIdForMov);
+        if (updErr) throw updErr;
 
+        showToast("Ajuste registrado", "success");
         loadMovements(activeProductIdForMov);
         loadProducts(); // Recargar lista principal
         e.target.reset();
+    } catch (err) {
+        console.error(err);
+        showToast("Error al registrar movimiento: " + err.message, "error");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Guardar';
+        hideLoading();
     }
-
-    btn.disabled = false;
 }
 
 // Helpers globales para botones dinámicos

@@ -1,4 +1,5 @@
 import { supabase, getTenantId } from './supabase.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 
 /**
  * Appointments Module - VetFlow 2.0 (Unified WhatsApp Action Version)
@@ -96,15 +97,22 @@ async function loadAppointments() {
         query = query.gte('fecha_hora', start.toISOString()).lt('fecha_hora', end.toISOString());
     }
 
-    const { data, error } = await query.order('fecha_hora', { ascending: true });
+    try {
+        showLoading();
+        const { data, error } = await query.order('fecha_hora', { ascending: true });
 
-    if (error) {
-        console.error("Error loading appointments:", error);
-        return;
+        if (error) {
+            throw error;
+        }
+
+        if (currentView === 'day') renderDayView(data);
+        else renderWeekView(data);
+    } catch (err) {
+        console.error("Error loading appointments:", err);
+        showToast("Error al cargar los turnos", "error");
+    } finally {
+        hideLoading();
     }
-
-    if (currentView === 'day') renderDayView(data);
-    else renderWeekView(data);
 }
 
 /**
@@ -248,15 +256,32 @@ window.selectOwner = async (id, name, updatePhone = true, phone = '') => {
     if (updatePhone) document.getElementById('appt-phone').value = phone;
     document.getElementById('owner-results').style.display = 'none';
 
-    const tenantId = await getTenantId();
-    const { data } = await supabase.from('pets').select('id, nombre').eq('client_id', id).eq('tenant_id', tenantId);
-    const petSelect = document.getElementById('appt-pet-id');
-    petSelect.innerHTML = data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-    petSelect.disabled = false;
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const { data, error } = await supabase.from('pets').select('id, nombre').eq('client_id', id).eq('tenant_id', tenantId);
+        if (error) throw error;
+        
+        const petSelect = document.getElementById('appt-pet-id');
+        petSelect.innerHTML = data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+        petSelect.disabled = false;
+    } catch (err) {
+        console.error(err);
+        showToast("Error al cargar mascotas", "error");
+    } finally {
+        hideLoading();
+    }
 };
 
 async function handleSaveAndNotify(e) {
     e.preventDefault();
+    
+    // HTML5 Form Validation
+    if (!e.target.checkValidity()) {
+        e.target.reportValidity();
+        return;
+    }
+
     const tenantId = await getTenantId();
     const id = document.getElementById('appointment-id').value;
     const phone = document.getElementById('appt-phone').value;
@@ -264,47 +289,56 @@ async function handleSaveAndNotify(e) {
     const originalContent = btn.innerHTML;
 
     if (!phone) {
-        alert("Por favor, ingresá un teléfono para el WhatsApp.");
+        showToast("Por favor, ingresá un teléfono para el WhatsApp.", "error");
         return;
     }
 
+    btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
-    const aptData = {
-        tenant_id: tenantId,
-        pet_id: document.getElementById('appt-pet-id').value,
-        fecha_hora: document.getElementById('appt-datetime').value,
-        motivo: document.getElementById('appt-motivo').value,
-        estado: document.getElementById('appt-status').value
-    };
+    try {
+        showLoading();
+        const aptData = {
+            tenant_id: tenantId,
+            pet_id: document.getElementById('appt-pet-id').value,
+            fecha_hora: document.getElementById('appt-datetime').value,
+            motivo: document.getElementById('appt-motivo').value,
+            estado: document.getElementById('appt-status').value
+        };
 
-    // Update phone in DB
-    await supabase.from('clients').update({ telefono: phone }).eq('id', document.getElementById('appt-client-id').value);
+        // Update phone in DB
+        const { error: phoneError } = await supabase.from('clients').update({ telefono: phone }).eq('id', document.getElementById('appt-client-id').value);
+        if (phoneError) throw phoneError;
 
-    let result;
-    if (id) {
-        result = await supabase.from('appointments').update(aptData).eq('id', id);
-    } else {
-        result = await supabase.from('appointments').insert(aptData).select('*, pets(nombre, clients(nombre))').single();
-    }
+        let result;
+        if (id) {
+            result = await supabase.from('appointments').update(aptData).eq('id', id);
+            if (result.error) throw result.error;
+            showToast("Turno actualizado correctamente.", "success");
+        } else {
+            result = await supabase.from('appointments').insert(aptData).select('*, pets(nombre, clients(nombre))').single();
+            if (result.error) throw result.error;
+            showToast("Turno creado correctamente.", "success");
+            
+            // Trigger WhatsApp for NEW appointments only, or conditionally
+            const fecha = new Date(aptData.fecha_hora).toLocaleDateString();
+            const hora = new Date(aptData.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const clientName = result.data.pets.clients.nombre;
+            const petName = result.data.pets.nombre;
 
-    if (result.error) {
-        alert("Error al guardar: " + result.error.message);
-        btn.innerHTML = originalContent;
-    } else {
-        // Trigger WhatsApp
-        const fecha = new Date(aptData.fecha_hora).toLocaleDateString();
-        const hora = new Date(aptData.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const msg = `🚀 *VetFlow - Turno Agendado*\n\nHola *${clientName}*, te recordamos el turno de *${petName}*:\n\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n🏥 Motivo: ${aptData.motivo}\n\n¡Te esperamos! 🐾`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
 
-        // Use result data for better naming if new, or selectedAppointment if editing
-        const clientName = id ? selectedAppointment.pets.clients.nombre : result.data.pets.clients.nombre;
-        const petName = id ? selectedAppointment.pets.nombre : result.data.pets.nombre;
-
-        const msg = `🚀 *VetFlow - Turno Agendado*\n\nHola *${clientName}*, te recordamos el turno de *${petName}*:\n\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n🏥 Motivo: ${aptData.motivo}\n\n¡Te esperamos! 🐾`;
-
-        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
         window.closeModal('modal-turno');
         loadAppointments();
+    } catch (err) {
+        console.error(err);
+        showToast("Error al guardar: " + err.message, "error");
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        hideLoading();
     }
 }
 

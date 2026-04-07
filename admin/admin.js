@@ -17,7 +17,7 @@ async function initAdmin() {
 
     if (error || !user) {
         // No session → redirect to login
-        window.location.href = '../index.html#login';
+        window.location.href = '../login.html';
         return;
     }
 
@@ -41,7 +41,7 @@ async function initAdmin() {
 
     document.getElementById('logout-btn').onclick = async () => {
         await supabase.auth.signOut();
-        window.location.href = '../index.html#login';
+        window.location.href = '../login.html';
     };
 
     loadTenants();

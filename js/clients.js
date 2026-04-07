@@ -1,4 +1,5 @@
 import { supabase, getTenantId } from './supabase.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 
 /**
  * Clients & Pets Module - VetFlow 2.0
@@ -42,20 +43,27 @@ async function init() {
  * CLIENTS LOGIC
  */
 async function loadClients() {
-    const tenantId = await getTenantId();
-    const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('apellido', { ascending: true });
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const { data, error } = await supabase
+            .from('clients')
+            .select('*')
+            .eq('tenant_id', tenantId)
+            .order('apellido', { ascending: true });
 
-    if (error) {
-        console.error("Error loading clients:", error);
-        return;
+        if (error) {
+            throw error;
+        }
+
+        allClients = data;
+        renderClients();
+    } catch (err) {
+        console.error("Error loading clients:", err);
+        showToast("Error al cargar clientes", "error");
+    } finally {
+        hideLoading();
     }
-
-    allClients = data;
-    renderClients();
 }
 
 function renderClients(filter = "") {
@@ -105,30 +113,43 @@ window.selectClient = async (id) => {
 
 async function handleSaveClient(e) {
     e.preventDefault();
-    const tenantId = await getTenantId();
-    const id = document.getElementById('client-id').value;
-
-    const clientData = {
-        tenant_id: tenantId,
-        nombre: document.getElementById('cli-nombre').value,
-        apellido: document.getElementById('cli-apellido').value,
-        dni: document.getElementById('cli-dni').value,
-        telefono: document.getElementById('cli-telefono').value,
-        email: document.getElementById('cli-email').value,
-        direccion: document.getElementById('cli-direccion').value
-    };
-
-    let error;
-    if (id) {
-        ({ error } = await supabase.from('clients').update(clientData).eq('id', id));
-    } else {
-        ({ error } = await supabase.from('clients').insert(clientData));
+    if (!e.target.checkValidity()) {
+        e.target.reportValidity();
+        return;
     }
 
-    if (error) alert("Error al guardar cliente: " + error.message);
-    else {
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const id = document.getElementById('client-id').value;
+
+        const clientData = {
+            tenant_id: tenantId,
+            nombre: document.getElementById('cli-nombre').value,
+            apellido: document.getElementById('cli-apellido').value,
+            dni: document.getElementById('cli-dni').value,
+            telefono: document.getElementById('cli-telefono').value,
+            email: document.getElementById('cli-email').value,
+            direccion: document.getElementById('cli-direccion').value
+        };
+
+        if (id) {
+            const { error } = await supabase.from('clients').update(clientData).eq('id', id);
+            if (error) throw error;
+            showToast("Cliente actualizado", "success");
+        } else {
+            const { error } = await supabase.from('clients').insert(clientData);
+            if (error) throw error;
+            showToast("Cliente creado", "success");
+        }
+
         closeModal('modal-cliente');
         loadClients();
+    } catch (err) {
+        console.error(err);
+        showToast("Error al guardar cliente: " + err.message, "error");
+    } finally {
+        hideLoading();
     }
 }
 
@@ -137,68 +158,85 @@ async function handleSaveClient(e) {
  */
 async function loadPets(clientId) {
     const petsGrid = document.getElementById('pets-grid');
-    petsGrid.innerHTML = 'Cargando mascotas...';
-    const { data, error } = await supabase
-        .from('pets')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('nombre', { ascending: true });
+    petsGrid.innerHTML = '<div class="spinner" style="margin: 20px auto;"></div>';
+    
+    try {
+        const { data, error } = await supabase
+            .from('pets')
+            .select('*')
+            .eq('client_id', clientId)
+            .order('nombre', { ascending: true });
 
-    if (error) {
-        petsGrid.innerHTML = 'Error al cargar mascotas.';
-        return;
-    }
+        if (error) throw error;
 
-    petsGrid.innerHTML = data.length > 0
-        ? data.map(p => `
-            <div class="pet-card">
-                <div class="pet-icon">
-                    <i class="fas ${p.especie === 'Gato' ? 'fa-cat' : 'fa-dog'}"></i>
-                </div>
-                <div class="pet-info">
-                    <h5>${p.nombre}</h5>
-                    <p>${p.especie} ${p.raza ? '• ' + p.raza : ''}</p>
-                    <div class="pet-actions">
-                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openPetModal('${p.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.location.href='medical-histories.html?petId=${p.id}'">
-                            Historial
-                        </button>
+        petsGrid.innerHTML = data.length > 0
+            ? data.map(p => `
+                <div class="pet-card">
+                    <div class="pet-icon">
+                        <i class="fas ${p.especie === 'Gato' ? 'fa-cat' : 'fa-dog'}"></i>
+                    </div>
+                    <div class="pet-info">
+                        <h5>${p.nombre}</h5>
+                        <p>${p.especie} ${p.raza ? '• ' + p.raza : ''}</p>
+                        <div class="pet-actions">
+                            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openPetModal('${p.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.location.href='medical-histories.html?petId=${p.id}'">
+                                Historial
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('')
-        : '<p>Este cliente no tiene mascotas registradas.</p>';
+            `).join('')
+            : '<p>Este cliente no tiene mascotas registradas.</p>';
+    } catch (err) {
+        console.error(err);
+        petsGrid.innerHTML = 'Error al cargar mascotas.';
+        showToast("Error al cargar mascotas", "error");
+    }
 }
 
 async function handleSavePet(e) {
     e.preventDefault();
-    const tenantId = await getTenantId();
-    const id = document.getElementById('pet-id').value;
-
-    const petData = {
-        tenant_id: tenantId,
-        client_id: selectedClientId,
-        nombre: document.getElementById('pet-nombre').value,
-        especie: document.getElementById('pet-especie').value,
-        raza: document.getElementById('pet-raza').value,
-        fecha_nacimiento: document.getElementById('pet-nacimiento').value || null,
-        sexo: document.getElementById('pet-sexo').value,
-        color: document.getElementById('pet-color').value
-    };
-
-    let error;
-    if (id) {
-        ({ error } = await supabase.from('pets').update(petData).eq('id', id));
-    } else {
-        ({ error } = await supabase.from('pets').insert(petData));
+    if (!e.target.checkValidity()) {
+        e.target.reportValidity();
+        return;
     }
 
-    if (error) alert("Error al guardar mascota: " + error.message);
-    else {
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const id = document.getElementById('pet-id').value;
+
+        const petData = {
+            tenant_id: tenantId,
+            client_id: selectedClientId,
+            nombre: document.getElementById('pet-nombre').value,
+            especie: document.getElementById('pet-especie').value,
+            raza: document.getElementById('pet-raza').value,
+            fecha_nacimiento: document.getElementById('pet-nacimiento').value || null,
+            sexo: document.getElementById('pet-sexo').value,
+            color: document.getElementById('pet-color').value
+        };
+
+        if (id) {
+            const { error } = await supabase.from('pets').update(petData).eq('id', id);
+            if (error) throw error;
+            showToast("Mascota actualizada", "success");
+        } else {
+            const { error } = await supabase.from('pets').insert(petData);
+            if (error) throw error;
+            showToast("Mascota registrada", "success");
+        }
+
         closeModal('modal-mascota');
         loadPets(selectedClientId);
+    } catch (err) {
+        console.error(err);
+        showToast("Error al guardar mascota: " + err.message, "error");
+    } finally {
+        hideLoading();
     }
 }
 

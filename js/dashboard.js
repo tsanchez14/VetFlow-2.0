@@ -1,4 +1,5 @@
 import { supabase, getTenantEstado } from './supabase.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 
 /**
  * Dashboard Logic - VetFlow 2.0
@@ -43,14 +44,16 @@ async function renderVetDashboard(tenant, elements) {
     const today = new Date().toISOString().split('T')[0];
 
     // 1. Fetch Data in Parallel
-    const [appointments, lastSales, productsResponse] = await Promise.all([
-        supabase.from('appointments').select('*, pets(nombre)').eq('tenant_id', tenant.id).gte('fecha_hora', today).order('fecha_hora', { ascending: true }),
-        supabase.from('sales').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(5),
-        supabase.from('products').select('*').eq('tenant_id', tenant.id)
-    ]);
+    try {
+        showLoading();
+        const [appointments, lastSales, productsResponse] = await Promise.all([
+            supabase.from('appointments').select('*, pets(nombre)').eq('tenant_id', tenant.id).gte('fecha_hora', today).order('fecha_hora', { ascending: true }),
+            supabase.from('sales').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(5),
+            supabase.from('products').select('*').eq('tenant_id', tenant.id)
+        ]);
 
-    if (appointments.error) console.error("Error turnos:", appointments.error);
-    if (lastSales.error) console.error("Error ventas:", lastSales.error);
+        if (appointments.error) throw appointments.error;
+        if (lastSales.error) throw lastSales.error;
 
     const lowStockItems = productsResponse.data ? productsResponse.data.filter(p => p.stock_actual < p.stock_minimo) : [];
 
@@ -135,6 +138,13 @@ async function renderVetDashboard(tenant, elements) {
         <a href="clients.html" class="action-btn"><i class="fas fa-user-plus"></i> Nuevo Cliente</a>
         <a href="products.html" class="action-btn"><i class="fas fa-plus-circle"></i> Cargar Stock</a>
     `;
+
+    } catch (err) {
+        console.error("Dashboard error:", err);
+        showToast("Error al cargar datos del tablero", "error");
+    } finally {
+        hideLoading();
+    }
 }
 
 /**
@@ -146,13 +156,15 @@ async function renderTiendaDashboard(tenant, elements) {
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
 
     // 1. Fetch Data
-    const [monthSales, lastSales, productsResponse] = await Promise.all([
-        supabase.from('sales').select('total').eq('tenant_id', tenant.id).gte('created_at', startOfMonth),
-        supabase.from('sales').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(5),
-        supabase.from('products').select('*').eq('tenant_id', tenant.id)
-    ]);
+    try {
+        showLoading();
+        const [monthSales, lastSales, productsResponse] = await Promise.all([
+            supabase.from('sales').select('total').eq('tenant_id', tenant.id).gte('created_at', startOfMonth),
+            supabase.from('sales').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(5),
+            supabase.from('products').select('*').eq('tenant_id', tenant.id)
+        ]);
 
-    if (monthSales.error) console.error("Error ventas mes:", monthSales.error);
+        if (monthSales.error) throw monthSales.error;
 
     const lowStockItems = productsResponse.data ? productsResponse.data.filter(p => p.stock_actual < p.stock_minimo) : [];
     const monthTotal = monthSales.data ? monthSales.data.reduce((acc, s) => acc + Number(s.total), 0) : 0;
@@ -219,6 +231,13 @@ async function renderTiendaDashboard(tenant, elements) {
         <a href="suppliers.html" class="action-btn"><i class="fas fa-truck"></i> Proveedores</a>
         <a href="reportes.html" class="action-btn"><i class="fas fa-chart-pie"></i> Ver Reportes</a>
     `;
+
+    } catch (err) {
+        console.error("Dashboard error:", err);
+        showToast("Error al cargar datos del tablero", "error");
+    } finally {
+        hideLoading();
+    }
 }
 
 function renderAlerts(lowStockItems, alertsSection) {

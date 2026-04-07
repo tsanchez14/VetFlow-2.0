@@ -2,8 +2,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // Configuración de Supabase
 // Pegar aquí los valores de tu proyecto de Supabase (Settings > API)
-const SUPABASE_URL = 'https://yafmjmsqmtehwglnznvg.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhZm1qbXNxbXRlaHdnbG56bnZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNTM4NjYsImV4cCI6MjA5MDgyOTg2Nn0.qKPCkZDvRH9GZFZDFvOTRv9vY1JOqqqaJECiJapmqvU';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Inicialización del cliente
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -45,3 +45,43 @@ export async function getTenantTipo() {
     const tenant = await getTenantEstado();
     return tenant ? tenant.tipo : null;
 }
+
+// Global Auth State Listener
+supabase.auth.onAuthStateChange((event, session) => {
+    const currentPath = window.location.pathname;
+    const isPublicPage = !currentPath.includes('/pages/') && !currentPath.includes('/admin/');
+
+    // Obtener el basePath seguro de manera dinámica (soporta subdominios e.g. GitHub Pages)
+    let basePath = '/';
+    if (currentPath.includes('/pages/')) {
+        basePath = currentPath.substring(0, currentPath.indexOf('/pages/') + 1);
+    } else if (currentPath.includes('/admin/')) {
+        basePath = currentPath.substring(0, currentPath.indexOf('/admin/') + 1);
+    } else {
+        basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+    }
+
+    if (event === 'SIGNED_OUT' || !session) {
+        // Redirigir al inicio de sesión si la sesión se pierde
+        if (!isPublicPage) {
+            window.location.href = basePath + 'login.html';
+        }
+    } else if (session) {
+        // Si hay una sesión activa
+        if (isPublicPage) {
+            // Si está en el login/index, guiarlo a su respectiva página privada
+            if (session.user.email === 'tsanchez.scz@gmail.com') {
+                window.location.href = basePath + 'admin/index.html';
+            } else {
+                window.location.href = basePath + 'pages/dashboard.html';
+            }
+        } else {
+            // Protección de rutas cruzadas (Admin tratando de entrar a Pages o Usuario tratando de entrar a Admin)
+            if (session.user.email === 'tsanchez.scz@gmail.com' && currentPath.includes('/pages/')) {
+                window.location.href = basePath + 'admin/index.html';
+            } else if (session.user.email !== 'tsanchez.scz@gmail.com' && currentPath.includes('/admin/')) {
+                window.location.href = basePath + 'pages/dashboard.html';
+            }
+        }
+    }
+});

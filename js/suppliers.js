@@ -1,4 +1,5 @@
 import { supabase, getTenantId } from './supabase.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 
 /**
  * Suppliers Module - VetFlow 2.0
@@ -30,20 +31,27 @@ async function init() {
 }
 
 async function loadSuppliers() {
-    const tenantId = await getTenantId();
-    const { data, error } = await supabase
-        .from('suppliers')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('razon_social', { ascending: true });
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const { data, error } = await supabase
+            .from('suppliers')
+            .select('*')
+            .eq('tenant_id', tenantId)
+            .order('razon_social', { ascending: true });
 
-    if (error) {
-        console.error(error);
-        return;
+        if (error) {
+            throw error;
+        }
+
+        allSuppliers = data || [];
+        renderSuppliers();
+    } catch (err) {
+        console.error(err);
+        showToast("Error al cargar proveedores", "error");
+    } finally {
+        hideLoading();
     }
-
-    allSuppliers = data || [];
-    renderSuppliers();
 }
 
 
@@ -113,27 +121,43 @@ window.openEditModal = (e, id) => {
 
 async function handleSaveSupplier(e) {
     e.preventDefault();
-    const id = document.getElementById('supp-id').value;
-    const tenantId = await getTenantId();
+    if (!e.target.checkValidity()) {
+        e.target.reportValidity();
+        return;
+    }
 
-    const data = {
-        tenant_id: tenantId,
-        razon_social: document.getElementById('supp-razon').value,
-        rubro: document.getElementById('supp-rubro').value,
-        telefono: document.getElementById('supp-tel').value,
-        email: document.getElementById('supp-email').value,
-        contacto: document.getElementById('supp-contacto').value,
-        observaciones: document.getElementById('supp-obs').value
-    };
+    try {
+        showLoading();
+        const id = document.getElementById('supp-id').value;
+        const tenantId = await getTenantId();
 
-    const { error } = id
-        ? await supabase.from('suppliers').update(data).eq('id', id)
-        : await supabase.from('suppliers').insert(data);
+        const data = {
+            tenant_id: tenantId,
+            razon_social: document.getElementById('supp-razon').value,
+            rubro: document.getElementById('supp-rubro').value,
+            telefono: document.getElementById('supp-tel').value,
+            email: document.getElementById('supp-email').value,
+            contacto: document.getElementById('supp-contacto').value,
+            observaciones: document.getElementById('supp-obs').value
+        };
 
-    if (error) alert(error.message);
-    else {
+        if (id) {
+            const { error: updErr } = await supabase.from('suppliers').update(data).eq('id', id);
+            if (updErr) throw updErr;
+            showToast("Proveedor actualizado exitosamente", "success");
+        } else {
+            const { error: insErr } = await supabase.from('suppliers').insert(data);
+            if (insErr) throw insErr;
+            showToast("Proveedor creado exitosamente", "success");
+        }
+
         window.closeModal('modal-supplier');
         loadSuppliers();
+    } catch (err) {
+        console.error(err);
+        showToast("Error al guardar proveedor: " + err.message, "error");
+    } finally {
+        hideLoading();
     }
 }
 

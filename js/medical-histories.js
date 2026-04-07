@@ -1,4 +1,5 @@
 import { supabase, getTenantId } from './supabase.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 
 /**
  * Medical Histories Module - VetFlow 2.0 (Precision Fix v4.3)
@@ -31,9 +32,18 @@ async function init() {
 }
 
 async function loadPets() {
-    const tenantId = await getTenantId();
-    const { data } = await supabase.from('pets').select('*, clients(*)').eq('tenant_id', tenantId);
-    allPets = data || [];
+    try {
+        showLoading();
+        const tenantId = await getTenantId();
+        const { data, error } = await supabase.from('pets').select('*, clients(*)').eq('tenant_id', tenantId);
+        if (error) throw error;
+        allPets = data || [];
+    } catch (err) {
+        console.error(err);
+        showToast("Error al cargar mascotas", "error");
+    } finally {
+        hideLoading();
+    }
 }
 
 function handleSearch(query) {
@@ -89,10 +99,15 @@ window.selectPet = async (id) => {
 
 async function loadHistoryData(petId) {
     const tenantId = await getTenantId();
-    const [{ data: records }, { data: health }] = await Promise.all([
-        supabase.from('medical_records').select('*').eq('pet_id', petId).eq('tenant_id', tenantId).order('fecha', { ascending: false }),
-        supabase.from('preventive_controls').select('*').eq('pet_id', petId).eq('tenant_id', tenantId).order('fecha_aplicacion', { ascending: false })
-    ]);
+    try {
+        showLoading();
+        const [{ data: records, error: recErr }, { data: health, error: healthErr }] = await Promise.all([
+            supabase.from('medical_records').select('*').eq('pet_id', petId).eq('tenant_id', tenantId).order('fecha', { ascending: false }),
+            supabase.from('preventive_controls').select('*').eq('pet_id', petId).eq('tenant_id', tenantId).order('fecha_aplicacion', { ascending: false })
+        ]);
+
+        if (recErr) throw recErr;
+        if (healthErr) throw healthErr;
 
     const timeline = document.getElementById('timeline-list');
     if (!records || records.length === 0) {
@@ -118,62 +133,98 @@ async function loadHistoryData(petId) {
         `).join('');
     }
 
-    const vacs = (health || []).filter(i => i.tipo === 'vacuna');
-    const pars = (health || []).filter(i => i.tipo === 'desparasitacion');
-    document.getElementById('vaccine-list').innerHTML = vacs.map(i => `<div class="health-mini-row">${i.nombre} <small>${new Date(i.fecha_aplicacion).toLocaleDateString()}</small></div>`).join('') || 'Sin registros';
-    document.getElementById('parasite-list').innerHTML = pars.map(i => `<div class="health-mini-row">${i.nombre} <small>${new Date(i.fecha_aplicacion).toLocaleDateString()}</small></div>`).join('') || 'Sin registros';
+        const vacs = (health || []).filter(i => i.tipo === 'vacuna');
+        const pars = (health || []).filter(i => i.tipo === 'desparasitacion');
+        document.getElementById('vaccine-list').innerHTML = vacs.map(i => `<div class="health-mini-row">${i.nombre} <small>${new Date(i.fecha_aplicacion).toLocaleDateString()}</small></div>`).join('') || 'Sin registros';
+        document.getElementById('parasite-list').innerHTML = pars.map(i => `<div class="health-mini-row">${i.nombre} <small>${new Date(i.fecha_aplicacion).toLocaleDateString()}</small></div>`).join('') || 'Sin registros';
+    } catch (err) {
+        console.error(err);
+        showToast("Error al cargar historia médica", "error");
+    } finally {
+        hideLoading();
+    }
 }
 
 async function handleSaveConsultation(e) {
     e.preventDefault();
-    if (!selectedPetId) {
-        console.warn('No pet selected for consultation');
+    if (!e.target.checkValidity()) {
+        e.target.reportValidity();
         return;
     }
+
+    if (!selectedPetId) {
+        showToast("Seleccioná una mascota antes de guardar", "error");
+        return;
+    }
+
     const btn = document.getElementById('btn-save-consult');
     const originalText = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-    const tid = await getTenantId();
-    const record = {
-        tenant_id: tid,
-        pet_id: selectedPetId,
-        fecha: new Date().toISOString(),
-        motivo: document.getElementById('cons-motivo').value,
-        peso: document.getElementById('cons-peso').value,
-        temperatura: document.getElementById('cons-temp').value,
-        fc: document.getElementById('cons-fc').value,
-        fr: document.getElementById('cons-fr').value,
-        diagnostico: document.getElementById('cons-diagnostico').value,
-        tratamiento: document.getElementById('cons-tratamiento').value
-    };
+    try {
+        showLoading();
+        const tid = await getTenantId();
+        const record = {
+            tenant_id: tid,
+            pet_id: selectedPetId,
+            fecha: new Date().toISOString(),
+            motivo: document.getElementById('cons-motivo').value,
+            peso: document.getElementById('cons-peso').value,
+            temperatura: document.getElementById('cons-temp').value,
+            fc: document.getElementById('cons-fc').value,
+            fr: document.getElementById('cons-fr').value,
+            diagnostico: document.getElementById('cons-diagnostico').value,
+            tratamiento: document.getElementById('cons-tratamiento').value
+        };
 
-    const { error } = await supabase.from('medical_records').insert(record);
-    if (error) alert(error.message);
-    else {
+        const { error } = await supabase.from('medical_records').insert(record);
+        if (error) throw error;
+        
+        showToast("Consulta guardada exitosamente", "success");
         e.target.reset();
-        loadHistoryData(selectedPetId);
+        await loadHistoryData(selectedPetId);
+    } catch (err) {
+        console.error(err);
+        showToast("Error al guardar consulta: " + err.message, "error");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        hideLoading();
     }
-    btn.disabled = false;
-    btn.innerHTML = originalText;
 }
 
 async function handleSavePrevention(e) {
     e.preventDefault();
-    const tid = await getTenantId();
-    const data = {
-        tenant_id: tid,
-        pet_id: selectedPetId,
-        tipo: document.getElementById('prev-tipo').value,
-        nombre: document.getElementById('prev-nombre').value,
-        fecha_aplicacion: document.getElementById('prev-fecha').value,
-        fecha_proxima: document.getElementById('prev-proxima').value || null
-    };
+    if (!e.target.checkValidity()) {
+        e.target.reportValidity();
+        return;
+    }
 
-    await supabase.from('preventive_controls').insert(data);
-    window.closeModal('modal-prevencion');
-    loadHistoryData(selectedPetId);
+    try {
+        showLoading();
+        const tid = await getTenantId();
+        const data = {
+            tenant_id: tid,
+            pet_id: selectedPetId,
+            tipo: document.getElementById('prev-tipo').value,
+            nombre: document.getElementById('prev-nombre').value,
+            fecha_aplicacion: document.getElementById('prev-fecha').value,
+            fecha_proxima: document.getElementById('prev-proxima').value || null
+        };
+
+        const { error } = await supabase.from('preventive_controls').insert(data);
+        if (error) throw error;
+        
+        showToast("Registro preventivo guardado", "success");
+        window.closeModal('modal-prevencion');
+        await loadHistoryData(selectedPetId);
+    } catch (err) {
+        console.error(err);
+        showToast("Error al guardar registro preventivo", "error");
+    } finally {
+        hideLoading();
+    }
 }
 
 window.openVaccineModal = (tipo) => {

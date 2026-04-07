@@ -1,4 +1,5 @@
 import { supabase, getTenantId } from './supabase.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 
 /**
  * Costs Module - VetFlow 2.0
@@ -46,22 +47,29 @@ async function loadCosts() {
     const lastDay = new Date(parts[0], parts[1], 0).getDate();
     const endDate = `${selectedMonth}-${lastDay}`;
 
-    const { data, error } = await supabase
-        .from('costs')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .gte('fecha', startDate)
-        .lte('fecha', endDate)
-        .order('fecha', { ascending: false });
+    try {
+        showLoading();
+        const { data, error } = await supabase
+            .from('costs')
+            .select('*')
+            .eq('tenant_id', tenantId)
+            .gte('fecha', startDate)
+            .lte('fecha', endDate)
+            .order('fecha', { ascending: false });
 
-    if (error) {
-        console.error(error);
-        return;
+        if (error) {
+            throw error;
+        }
+
+        allCosts = data || [];
+        renderCosts();
+        updateSummary();
+    } catch (err) {
+        console.error(err);
+        showToast("Error al cargar los gastos", "error");
+    } finally {
+        hideLoading();
     }
-
-    allCosts = data || [];
-    renderCosts();
-    updateSummary();
 }
 
 function updateSummary() {
@@ -143,25 +151,40 @@ if (window.layoutIsReady) {
 
 async function handleSaveCost(e) {
     e.preventDefault();
+    if (!e.target.checkValidity()) {
+        e.target.reportValidity();
+        return;
+    }
+
     const id = document.getElementById('cost-id').value;
     const tenantId = await getTenantId();
 
-    const data = {
-        tenant_id: tenantId,
-        concepto: document.getElementById('cost-concepto').value,
-        categoria: document.getElementById('cost-tipo').value,
-        monto: parseFloat(document.getElementById('cost-monto').value),
-        fecha: document.getElementById('cost-date').value
-    };
+    try {
+        showLoading();
+        const data = {
+            tenant_id: tenantId,
+            concepto: document.getElementById('cost-concepto').value,
+            categoria: document.getElementById('cost-tipo').value,
+            monto: parseFloat(document.getElementById('cost-monto').value),
+            fecha: document.getElementById('cost-date').value
+        };
 
-    const { error } = id
-        ? await supabase.from('costs').update(data).eq('id', id)
-        : await supabase.from('costs').insert(data);
+        if (id) {
+            const { error } = await supabase.from('costs').update(data).eq('id', id);
+            if (error) throw error;
+            showToast("Gasto actualizado", "success");
+        } else {
+            const { error } = await supabase.from('costs').insert(data);
+            if (error) throw error;
+            showToast("Gasto registrado", "success");
+        }
 
-    if (error) {
-        alert("Error guardando el gasto: " + error.message);
-    } else {
         window.closeModal('modal-cost');
         loadCosts();
+    } catch (err) {
+        console.error(err);
+        showToast("Error guardando el gasto: " + err.message, "error");
+    } finally {
+        hideLoading();
     }
 }
