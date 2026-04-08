@@ -134,7 +134,7 @@ async function renderVetDashboard(tenant, elements) {
     // 5. Quick Actions
     quickActions.innerHTML = `
         <a href="appointments.html" class="action-btn"><i class="fas fa-calendar-plus"></i> Nuevo Turno</a>
-        <a href="sales.html" class="action-btn"><i class="fas fa-cash-register"></i> Nueva Venta</a>
+        <a href="ventas.html" class="action-btn"><i class="fas fa-cash-register"></i> Nueva Venta</a>
         <a href="clients.html" class="action-btn"><i class="fas fa-user-plus"></i> Nuevo Cliente</a>
         <a href="products.html" class="action-btn"><i class="fas fa-plus-circle"></i> Cargar Stock</a>
     `;
@@ -226,7 +226,7 @@ async function renderTiendaDashboard(tenant, elements) {
 
     // 5. Quick Actions
     quickActions.innerHTML = `
-        <a href="sales.html" class="action-btn"><i class="fas fa-cash-register"></i> Nueva Venta</a>
+        <a href="ventas.html" class="action-btn"><i class="fas fa-cash-register"></i> Nueva Venta</a>
         <a href="products.html" class="action-btn"><i class="fas fa-boxes"></i> Inventario</a>
         <a href="suppliers.html" class="action-btn"><i class="fas fa-truck"></i> Proveedores</a>
         <a href="reportes.html" class="action-btn"><i class="fas fa-chart-pie"></i> Ver Reportes</a>

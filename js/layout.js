@@ -77,6 +77,7 @@ async function initLayout() {
     // 4. Inject Structure
     renderStructure(tenant, currentPath);
     setupLogout();
+    setupMobileSidebar();
 
     // 5. Signal that Layout is ready
     window.layoutIsReady = true; // Global flag
@@ -115,6 +116,9 @@ function renderStructure(tenant, currentPath) {
     const headerHtml = `
         <header id="layout-header">
             <div class="header-business-info">
+                <button id="mobile-menu-btn" class="hamburger-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <h3>${tenant.nombre} <span class="badge-vet" style="margin-left: 10px; font-size: 0.65rem;">${tenant.tipo}</span></h3>
             </div>
             <div class="header-actions">
@@ -131,6 +135,7 @@ function renderStructure(tenant, currentPath) {
 
     wrapper.innerHTML = `
         ${sidebarHtml}
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
         <div id="layout-main">
             ${trialBanner}
             ${headerHtml}
@@ -170,6 +175,33 @@ function setupLogout() {
             await supabase.auth.signOut();
             window.location.href = '../login.html';
         };
+    }
+}
+
+function setupMobileSidebar() {
+    const btn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('layout-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (btn && sidebar && overlay) {
+        const toggleMenu = () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        };
+
+        btn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        // Closes on any link click (for inner navigation if needed)
+        const links = sidebar.querySelectorAll('.sidebar-link');
+        links.forEach(link => {
+            link.addEventListener('click', () => {
+                if(window.innerWidth <= 1024) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            });
+        });
     }
 }
 

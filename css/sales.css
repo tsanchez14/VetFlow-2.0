@@ -517,3 +517,19 @@
     background: #fee2e2;
     color: #ef4444;
 }
+
+/* Responsive adjustments for Sales */
+@media (max-width: 768px) {
+    .history-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .summary-details {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    .grand-total {
+        text-align: left;
+    }
+}
