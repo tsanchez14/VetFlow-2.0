@@ -96,6 +96,40 @@ h4 {
     box-shadow: var(--shadow-soft);
 }
 
+.menu-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.nav-menu {
+    display: flex;
+    align-items: center;
+}
+
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    z-index: 999;
+}
+
+.menu-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
 .logo-container {
     display: flex;
     align-items: center;
@@ -373,8 +407,43 @@ footer {
 @media (max-width: 968px) {
     .navbar {
         padding: 1rem 5%;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 0;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        background: var(--white);
         flex-direction: column;
+        justify-content: center;
+        padding: 40px;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+        z-index: 1000;
+    }
+
+    .nav-menu.active {
+        right: 0;
+    }
+
+    .nav-btns {
+        flex-direction: column;
+        width: 100%;
         gap: 15px;
+    }
+
+    .nav-btns .btn-primary {
+        margin-left: 0 !important;
     }
 
     .hero {
@@ -436,7 +505,10 @@ footer {
 /* Loader */
 #global-loader {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(4px);
     z-index: 9999;
@@ -447,10 +519,12 @@ footer {
     pointer-events: none;
     transition: opacity 0.3s ease;
 }
+
 #global-loader.active {
     opacity: 1;
     pointer-events: all;
 }
+
 .spinner {
     width: 60px;
     height: 60px;
@@ -459,8 +533,11 @@ footer {
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
+
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Toast Notification */
@@ -479,7 +556,7 @@ footer {
     color: var(--text-main);
     padding: 16px 24px;
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -499,6 +576,7 @@ footer {
 .toast-success {
     border-left-color: var(--secondary);
 }
+
 .toast-success i {
     color: var(--secondary);
 }
@@ -506,6 +584,7 @@ footer {
 .toast-error {
     border-left-color: #e11d48;
 }
+
 .toast-error i {
     color: #e11d48;
 }
@@ -520,6 +599,7 @@ footer {
     color: var(--text-muted);
     transition: color 0.2s;
 }
+
 .toast-close:hover {
     color: var(--text-main);
 }
@@ -530,6 +610,7 @@ footer {
         opacity: 1;
     }
 }
+
 @keyframes slideOutToast {
     to {
         transform: translateX(120%);
