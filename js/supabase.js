@@ -72,15 +72,16 @@ supabase.auth.onAuthStateChange((event, session) => {
             window.location.href = basePath + 'login.html';
         }
     } else {
-        // If session exists and user is on the login page, redirect to their dashboard
-        if (isLoginPage) {
-            console.log("Session exists on login page, redirecting to dashboard...");
+        // Only redirect to dashboard if we are on login page AND a SIGNED_IN event just happened
+        // This allows users to visit the login page even if already logged in (e.g. to switch accounts)
+        if (isLoginPage && event === 'SIGNED_IN') {
+            console.log("Login successful, redirecting to dashboard...");
             if (session.user.email === 'tsanchez.scz@gmail.com') {
                 window.location.href = basePath + 'admin/index.html';
             } else {
                 window.location.href = basePath + 'pages/dashboard.html';
             }
-        }
+        } 
 
         // Cross-role protection
         const isAdmin = session.user.email === 'tsanchez.scz@gmail.com';
