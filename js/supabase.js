@@ -50,8 +50,12 @@ export async function getTenantTipo() {
 supabase.auth.onAuthStateChange((event, session) => {
     const currentPath = window.location.pathname;
     const isPublicPage = currentPath === '/' ||
-        currentPath.endsWith('index.html') ||
-        currentPath.endsWith('login.html');
+        currentPath.includes('index.html') ||
+        currentPath.includes('login.html') ||
+        currentPath.endsWith('/login');
+
+    console.log("Auth Event:", event, "Path:", currentPath, "Public:", isPublicPage);
+
     // Obtener el basePath seguro de manera dinámica (soporta subdominios e.g. GitHub Pages)
     let basePath = '/';
     if (currentPath.includes('/pages/')) {
@@ -65,12 +69,16 @@ supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_OUT' || !session) {
         // Redirigir al inicio de sesión si la sesión se pierde
         if (!isPublicPage) {
+            console.log("Redirecting to login: Not a public page and no session.");
             window.location.href = basePath + 'login.html';
         }
     } else if (session) {
         // Redirigir al dashboard SOLO si el usuario está en el LOGIN
-        // Esto permite que la Landing Page (index.html) sea accesible aunque haya sesión.
-        if (currentPath.endsWith('login.html')) {
+        // Usamos includes('login') para soportar /login.html y /login (clean URLs)
+        const isLoginPage = currentPath.includes('login.html') || currentPath.endsWith('/login');
+
+        if (isLoginPage) {
+            console.log("On login page with session, redirecting to dashboard...");
             if (session.user.email === 'tsanchez.scz@gmail.com') {
                 window.location.href = basePath + 'admin/index.html';
             } else {
