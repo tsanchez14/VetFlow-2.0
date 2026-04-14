@@ -161,6 +161,7 @@ h4 {
     transition: var(--transition);
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     cursor: pointer;
     border: none;
@@ -454,7 +455,12 @@ footer {
     }
 
     .hero h1 {
-        font-size: 2.8rem;
+        font-size: 2.2rem;
+        line-height: 1.2;
+    }
+
+    .hero p {
+        font-size: 1rem;
     }
 
     .hero-content {
@@ -464,7 +470,7 @@ footer {
     .hero-image-container {
         order: 1;
         width: 100%;
-        max-width: 350px;
+        max-width: 280px;
     }
 
     .description-grid {
@@ -477,10 +483,18 @@ footer {
         padding: 60px 5%;
     }
 
+    .modules-grid {
+        grid-template-columns: 1fr;
+    }
+
     .cta-section {
         padding: 60px 5%;
         margin: 40px 5%;
         border-radius: 24px;
+    }
+
+    .cta-section h2 {
+        font-size: 1.8rem;
     }
 
     .footer-content {

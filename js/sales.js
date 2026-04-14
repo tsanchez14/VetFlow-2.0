@@ -281,7 +281,7 @@ async function loadHistory() {
 
         const { data, error } = await query;
         if (error) throw error;
-        
+
         const list = document.getElementById('history-list');
 
         if (!data || data.length === 0) {
@@ -408,7 +408,7 @@ window.loadClosure = async () => {
             .eq('tenant_id', tenantId)
             .eq('estado', 'pagado')
             .gte('fecha', today);
-            
+
         if (error) throw error;
 
         const summary = {

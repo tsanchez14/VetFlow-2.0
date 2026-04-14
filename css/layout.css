@@ -140,10 +140,13 @@
 /* Mobile Hamburger & Overlay */
 .sidebar-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(3px);
-    z-index: 95; 
+    z-index: 95;
     visibility: hidden;
     opacity: 0;
     transition: all 0.3s ease;
@@ -165,7 +168,10 @@
 }
 
 /* Global Responsive Table Wrapper & Containers */
-.table-responsive, .table-card-premium, .cart-table-card, .table-container-glass {
+.table-responsive,
+.table-card-premium,
+.cart-table-card,
+.table-container-glass {
     width: 100%;
     max-width: 100%;
     display: block;
@@ -173,7 +179,10 @@
     -webkit-overflow-scrolling: touch;
 }
 
-.table-responsive table, .table-card-premium table, .cart-table-card table, .table-container-glass table {
+.table-responsive table,
+.table-card-premium table,
+.cart-table-card table,
+.table-container-glass table {
     white-space: nowrap;
 }
 
@@ -195,11 +204,11 @@
     #layout-main {
         margin-left: 0;
     }
-    
+
     #layout-header {
         padding: 0 20px;
     }
-    
+
     .header-business-info {
         display: flex;
         align-items: center;
@@ -209,12 +218,62 @@
     .hamburger-btn {
         display: block;
     }
-    
+
     #trial-banner {
         font-size: 0.75rem;
     }
-    
+
     #app-content {
         padding: 15px;
+    }
+
+    /* Table Fixes on Mobile */
+    .premium-table,
+    .premium-table-v5 {
+        font-size: 0.85rem;
+    }
+
+    .premium-table th,
+    .premium-table td {
+        padding: 12px 10px;
+    }
+
+    /* Grid Stacking */
+    .stats-grid,
+    .main-grid,
+    .alerts-grid,
+    .form-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+
+    .modal-content,
+    .modal-content-premium {
+        padding: 20px;
+        width: 95%;
+    }
+
+    /* Hide less important columns if needed */
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-business-info h3 {
+        font-size: 0.9rem;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
     }
 }

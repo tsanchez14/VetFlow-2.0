@@ -268,7 +268,7 @@ async function handleSaveAdjustment(e) {
         showToast("Error al registrar movimiento: " + err.message, "error");
     } finally {
         btn.disabled = false;
-        btn.innerHTML = 'Guardar';
+        btn.innerHTML = '<i class="fas fa-save"></i> Registrar';
         hideLoading();
     }
 }

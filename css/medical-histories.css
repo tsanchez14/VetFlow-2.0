@@ -1,12 +1,35 @@
 /* Medical History - Precision Cleanup v4.2+ */
 
 .medical-scroll-container {
-    max-width: 1200px;
+    padding: 20px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
+}
+
+@media (max-width: 1024px) {
+    .hero-grid-body {
+        grid-template-columns: 1fr !important;
+    }
+
+    .vitals-row-v4 {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .records-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .vitals-row-v4 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .hero-card-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch !important;
+    }
 }
 
 /* 1. BUSCADOR */

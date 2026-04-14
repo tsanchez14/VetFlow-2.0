@@ -117,6 +117,28 @@
             color: #15803d;
             border: 1px solid #bbf7d0;
         }
+
+        /* Password Visibility Toggle */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 5px;
+            transition: var(--transition);
+        }
+
+        .password-toggle:hover {
+            color: var(--primary);
+        }
     </style>
 </head>
 
@@ -140,7 +162,12 @@
                 </div>
                 <div class="form-group">
                     <label>Contraseña</label>
-                    <input type="password" id="login-password" placeholder="••••••••" required>
+                    <div class="password-wrapper">
+                        <input type="password" id="login-password" placeholder="••••••••" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('login-password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
                     Ingresar <i class="fas fa-sign-in-alt"></i>
@@ -166,7 +193,12 @@
                 </div>
                 <div class="form-group">
                     <label>Contraseña</label>
-                    <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    <div class="password-wrapper">
+                        <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+                        <button type="button" class="password-toggle" onclick="togglePassword('reg-password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
                     Crear Cuenta <i class="fas fa-user-plus"></i>
@@ -231,6 +263,20 @@
 
         window.onload = handleHash;
         window.onhashchange = handleHash;
+
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
     </script>
 </body>
 

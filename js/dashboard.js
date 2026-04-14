@@ -55,11 +55,11 @@ async function renderVetDashboard(tenant, elements) {
         if (appointments.error) throw appointments.error;
         if (lastSales.error) throw lastSales.error;
 
-    const lowStockItems = productsResponse.data ? productsResponse.data.filter(p => p.stock_actual < p.stock_minimo) : [];
+        const lowStockItems = productsResponse.data ? productsResponse.data.filter(p => p.stock_actual < p.stock_minimo) : [];
 
-    // 2. Render Stats
-    const pendingAppts = appointments.data ? appointments.data.filter(a => a.estado === 'pendiente').length : 0;
-    statsGrid.innerHTML = `
+        // 2. Render Stats
+        const pendingAppts = appointments.data ? appointments.data.filter(a => a.estado === 'pendiente').length : 0;
+        statsGrid.innerHTML = `
         <div class="stat-card">
             <div class="stat-icon bg-blue"><i class="fas fa-calendar-check"></i></div>
             <div class="stat-info">
@@ -83,11 +83,11 @@ async function renderVetDashboard(tenant, elements) {
         </div>
     `;
 
-    // 3. Render Alerts
-    renderAlerts(lowStockItems, alertsSection);
+        // 3. Render Alerts
+        renderAlerts(lowStockItems, alertsSection);
 
-    // 4. Render Main Activity
-    mainGrid.innerHTML = `
+        // 4. Render Main Activity
+        mainGrid.innerHTML = `
         <div class="activity-card">
             <h3><i class="fas fa-clock"></i> Próximos Turnos</h3>
             <div class="table-responsive">
@@ -97,7 +97,7 @@ async function renderVetDashboard(tenant, elements) {
                     </thead>
                     <tbody>
                         ${appointments.data && appointments.data.length > 0
-            ? appointments.data.slice(0, 5).map(a => `
+                ? appointments.data.slice(0, 5).map(a => `
                                 <tr>
                                     <td>${new Date(a.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                                     <td>${a.pets?.nombre || 'N/A'}</td>
@@ -105,8 +105,8 @@ async function renderVetDashboard(tenant, elements) {
                                     <td><span class="badge-vet">${a.estado}</span></td>
                                 </tr>
                             `).join('')
-            : '<tr><td colspan="4">No hay turnos pendientes para hoy.</td></tr>'
-        }
+                : '<tr><td colspan="4">No hay turnos pendientes para hoy.</td></tr>'
+            }
                     </tbody>
                 </table>
             </div>
@@ -117,27 +117,22 @@ async function renderVetDashboard(tenant, elements) {
                 <table>
                     <tbody>
                         ${lastSales.data && lastSales.data.length > 0
-            ? lastSales.data.map(s => `
+                ? lastSales.data.map(s => `
                                 <tr>
                                     <td>${new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                                     <td><strong>$${s.total}</strong></td>
                                 </tr>
                             `).join('')
-            : '<tr><td>Sin ventas registradas hoy.</td></tr>'
-        }
+                : '<tr><td>Sin ventas registradas hoy.</td></tr>'
+            }
                     </tbody>
                 </table>
             </div>
         </div>
     `;
 
-    // 5. Quick Actions
-    quickActions.innerHTML = `
-        <a href="appointments.html" class="action-btn"><i class="fas fa-calendar-plus"></i> Nuevo Turno</a>
-        <a href="ventas.html" class="action-btn"><i class="fas fa-cash-register"></i> Nueva Venta</a>
-        <a href="clients.html" class="action-btn"><i class="fas fa-user-plus"></i> Nuevo Cliente</a>
-        <a href="products.html" class="action-btn"><i class="fas fa-plus-circle"></i> Cargar Stock</a>
-    `;
+        // 5. Quick Actions - Removed as per request
+        if (quickActions) quickActions.innerHTML = '';
 
     } catch (err) {
         console.error("Dashboard error:", err);
@@ -166,11 +161,11 @@ async function renderTiendaDashboard(tenant, elements) {
 
         if (monthSales.error) throw monthSales.error;
 
-    const lowStockItems = productsResponse.data ? productsResponse.data.filter(p => p.stock_actual < p.stock_minimo) : [];
-    const monthTotal = monthSales.data ? monthSales.data.reduce((acc, s) => acc + Number(s.total), 0) : 0;
+        const lowStockItems = productsResponse.data ? productsResponse.data.filter(p => p.stock_actual < p.stock_minimo) : [];
+        const monthTotal = monthSales.data ? monthSales.data.reduce((acc, s) => acc + Number(s.total), 0) : 0;
 
-    // 2. Render Stats
-    statsGrid.innerHTML = `
+        // 2. Render Stats
+        statsGrid.innerHTML = `
         <div class="stat-card">
             <div class="stat-icon bg-green"><i class="fas fa-chart-line"></i></div>
             <div class="stat-info">
@@ -194,11 +189,11 @@ async function renderTiendaDashboard(tenant, elements) {
         </div>
     `;
 
-    // 3. Alerts
-    renderAlerts(lowStockItems, alertsSection);
+        // 3. Alerts
+        renderAlerts(lowStockItems, alertsSection);
 
-    // 4. Main Activity
-    mainGrid.innerHTML = `
+        // 4. Main Activity
+        mainGrid.innerHTML = `
         <div class="activity-card" style="grid-column: span 2;">
             <h3><i class="fas fa-history"></i> Últimas Ventas</h3>
             <div class="table-responsive">
@@ -208,7 +203,7 @@ async function renderTiendaDashboard(tenant, elements) {
                     </thead>
                     <tbody>
                         ${lastSales.data && lastSales.data.length > 0
-            ? lastSales.data.map(s => `
+                ? lastSales.data.map(s => `
                                 <tr>
                                     <td>${new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                                     <td>${new Date(s.created_at).toLocaleDateString()}</td>
@@ -216,21 +211,16 @@ async function renderTiendaDashboard(tenant, elements) {
                                     <td><span class="badge-vet">${s.medio_pago || 'efectivo'}</span></td>
                                 </tr>
                             `).join('')
-            : '<tr><td colspan="4">Sin ventas registradas aún.</td></tr>'
-        }
+                : '<tr><td colspan="4">Sin ventas registradas aún.</td></tr>'
+            }
                     </tbody>
                 </table>
             </div>
         </div>
     `;
 
-    // 5. Quick Actions
-    quickActions.innerHTML = `
-        <a href="ventas.html" class="action-btn"><i class="fas fa-cash-register"></i> Nueva Venta</a>
-        <a href="products.html" class="action-btn"><i class="fas fa-boxes"></i> Inventario</a>
-        <a href="suppliers.html" class="action-btn"><i class="fas fa-truck"></i> Proveedores</a>
-        <a href="reportes.html" class="action-btn"><i class="fas fa-chart-pie"></i> Ver Reportes</a>
-    `;
+        // 5. Quick Actions - Removed as per request
+        if (quickActions) quickActions.innerHTML = '';
 
     } catch (err) {
         console.error("Dashboard error:", err);

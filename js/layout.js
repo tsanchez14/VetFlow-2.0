@@ -97,7 +97,7 @@ function renderStructure(tenant, currentPath) {
     const sidebarHtml = `
         <div id="layout-sidebar">
             <div class="sidebar-logo">
-                <img src="../logo-icon.svg" alt="VetFlow">
+                <img src="../logo-icon.svg" alt="VetFlow" onerror="this.src='/logo-icon.svg'; this.onerror=function(){this.src='https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/solid/paw.svg'}">
                 <span class="nav-brand" style="font-size: 1.4rem;">VetFlow</span>
             </div>
             <nav class="sidebar-nav">
@@ -196,7 +196,7 @@ function setupMobileSidebar() {
         const links = sidebar.querySelectorAll('.sidebar-link');
         links.forEach(link => {
             link.addEventListener('click', () => {
-                if(window.innerWidth <= 1024) {
+                if (window.innerWidth <= 1024) {
                     sidebar.classList.remove('open');
                     overlay.classList.remove('active');
                 }
