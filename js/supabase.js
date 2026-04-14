@@ -49,36 +49,32 @@ export async function getTenantTipo() {
 // Global Auth State Listener
 supabase.auth.onAuthStateChange((event, session) => {
     const currentPath = window.location.pathname;
-    const isPublicPage = currentPath === '/' ||
-        currentPath.includes('index.html') ||
-        currentPath.includes('login.html') ||
-        currentPath.endsWith('/login');
 
-    console.log("Auth Event:", event, "Path:", currentPath, "Public:", isPublicPage);
+    // Detect if we are in a protected area
+    const isAppArea = currentPath.includes('/pages/') || currentPath.includes('/admin/');
+    // Detect specifically if we are on the login page (supporting various URL formats)
+    const isLoginPage = currentPath.toLowerCase().includes('login');
 
-    // Obtener el basePath seguro de manera dinámica (soporta subdominios e.g. GitHub Pages)
+    console.log("Auth Event:", event, "Path:", currentPath, "isAppArea:", isAppArea, "isLoginPage:", isLoginPage);
+
+    // Get base path
     let basePath = '/';
     if (currentPath.includes('/pages/')) {
         basePath = currentPath.substring(0, currentPath.indexOf('/pages/') + 1);
     } else if (currentPath.includes('/admin/')) {
         basePath = currentPath.substring(0, currentPath.indexOf('/admin/') + 1);
-    } else {
-        basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
     }
 
-    if (event === 'SIGNED_OUT' || !session) {
-        // Redirigir al inicio de sesión si la sesión se pierde
-        if (!isPublicPage) {
-            console.log("Redirecting to login: Not a public page and no session.");
+    if (!session) {
+        // If no session and trying to access protected area, redirect to login
+        if (isAppArea) {
+            console.log("No session, redirecting to login...");
             window.location.href = basePath + 'login.html';
         }
-    } else if (session) {
-        // Redirigir al dashboard SOLO si el usuario está en el LOGIN
-        // Usamos includes('login') para soportar /login.html y /login (clean URLs)
-        const isLoginPage = currentPath.includes('login.html') || currentPath.endsWith('/login');
-
+    } else {
+        // If session exists and user is on the login page, redirect to their dashboard
         if (isLoginPage) {
-            console.log("On login page with session, redirecting to dashboard...");
+            console.log("Session exists on login page, redirecting to dashboard...");
             if (session.user.email === 'tsanchez.scz@gmail.com') {
                 window.location.href = basePath + 'admin/index.html';
             } else {
@@ -86,10 +82,11 @@ supabase.auth.onAuthStateChange((event, session) => {
             }
         }
 
-        // Protección de rutas cruzadas (Admin tratando de entrar a Pages o Usuario tratando de entrar a Admin)
-        if (session.user.email === 'tsanchez.scz@gmail.com' && currentPath.includes('/pages/')) {
+        // Cross-role protection
+        const isAdmin = session.user.email === 'tsanchez.scz@gmail.com';
+        if (isAdmin && currentPath.includes('/pages/')) {
             window.location.href = basePath + 'admin/index.html';
-        } else if (session.user.email !== 'tsanchez.scz@gmail.com' && currentPath.includes('/admin/')) {
+        } else if (!isAdmin && currentPath.includes('/admin/')) {
             window.location.href = basePath + 'pages/dashboard.html';
         }
     }

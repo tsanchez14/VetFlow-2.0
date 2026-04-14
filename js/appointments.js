@@ -188,45 +188,48 @@ window.openAppointmentModal = async (id = null) => {
     document.getElementById('appointment-id').value = id || '';
 
     if (id) {
-        // EDIT MODE
+        // MODO EDICIÓN
         document.getElementById('modal-turno-title').innerText = "Editar Turno";
         const tenantId = await getTenantId();
         const { data: apt } = await supabase.from('appointments').select('*, pets(id, nombre, client_id, clients(nombre, apellido, telefono))').eq('id', id).eq('tenant_id', tenantId).single();
         if (!apt) { document.getElementById('modal-turno').classList.remove('active'); return; }
         selectedAppointment = apt;
 
-        // UI for Edit
+        // UI para Edición
         document.getElementById('group-search-owner').style.display = 'none';
         document.getElementById('client-summary').style.display = 'block';
         document.getElementById('display-owner-name').innerText = `${apt.pets.nombre} (${apt.pets.clients.nombre} ${apt.pets.clients.apellido})`;
         document.getElementById('appt-client-id').value = apt.pets.client_id;
         document.getElementById('appt-phone').value = apt.pets.clients.telefono || '';
 
-        // Load pets and select current
+        // Cargar mascotas y autocompletar el input
         await selectOwner(apt.pets.client_id, `${apt.pets.clients.nombre} ${apt.pets.clients.apellido}`, false);
+        document.getElementById('appt-pet-name').value = apt.pets.nombre;
         document.getElementById('appt-pet-id').value = apt.pet_id;
 
-        // Date/Time
+        // Fecha/Hora
         const localDate = new Date(apt.fecha_hora).toISOString().slice(0, 16);
         document.getElementById('appt-datetime').value = localDate;
         document.getElementById('appt-status').value = apt.estado;
         document.getElementById('appt-motivo').value = apt.motivo;
 
-        // Show Health Record if Attended
+        // Botones de acción si ya fue atendido
         document.getElementById('attended-actions').style.display = apt.estado === 'atendido' ? 'block' : 'none';
 
     } else {
-        // NEW MODE
+        // MODO NUEVO
         selectedAppointment = null;
         document.getElementById('modal-turno-title').innerText = "Nuevo Turno";
         document.getElementById('group-search-owner').style.display = 'block';
         document.getElementById('client-summary').style.display = 'none';
-        document.getElementById('appt-pet-id').disabled = true;
+        document.getElementById('appt-pet-name').disabled = true;
+        document.getElementById('appt-pet-name').value = '';
+        document.getElementById('appt-pet-id').value = '';
         document.getElementById('attended-actions').style.display = 'none';
     }
 
     document.getElementById('modal-turno').classList.add('active');
-}
+};
 
 async function searchOwners(query) {
     const resultsDiv = document.getElementById('owner-results');
@@ -261,10 +264,21 @@ window.selectOwner = async (id, name, updatePhone = true, phone = '') => {
         const tenantId = await getTenantId();
         const { data, error } = await supabase.from('pets').select('id, nombre').eq('client_id', id).eq('tenant_id', tenantId);
         if (error) throw error;
-        
-        const petSelect = document.getElementById('appt-pet-id');
-        petSelect.innerHTML = data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-        petSelect.disabled = false;
+
+        const petList = document.getElementById('pets-list');
+        const petNameInput = document.getElementById('appt-pet-name');
+
+        petList.innerHTML = data.map(p => `<option value="${p.nombre}" data-id="${p.id}"></option>`).join('');
+        petNameInput.disabled = false;
+        petNameInput.placeholder = "Escriba el nombre de la mascota...";
+
+        // Listener to sync ID
+        petNameInput.oninput = () => {
+            const val = petNameInput.value;
+            const option = Array.from(petList.options).find(opt => opt.value === val);
+            document.getElementById('appt-pet-id').value = option ? option.dataset.id : '';
+        };
+
     } catch (err) {
         console.error(err);
         showToast("Error al cargar mascotas", "error");
@@ -275,7 +289,7 @@ window.selectOwner = async (id, name, updatePhone = true, phone = '') => {
 
 async function handleSaveAndNotify(e) {
     e.preventDefault();
-    
+
     // HTML5 Form Validation
     if (!e.target.checkValidity()) {
         e.target.reportValidity();
@@ -298,9 +312,36 @@ async function handleSaveAndNotify(e) {
 
     try {
         showLoading();
+        const petIdValue = document.getElementById('appt-pet-id').value;
+        const petNameValue = document.getElementById('appt-pet-name').value;
+        const clientId = document.getElementById('appt-client-id').value;
+
+        let finalPetId = petIdValue;
+
+        // If no ID but name exists, create the pet
+        if (!finalPetId && petNameValue) {
+            const { data: newPet, error: petError } = await supabase
+                .from('pets')
+                .insert({
+                    tenant_id: tenantId,
+                    client_id: clientId,
+                    nombre: petNameValue,
+                    especie: 'Desconocido' // Default species for quick entry
+                })
+                .select()
+                .single();
+
+            if (petError) throw petError;
+            finalPetId = newPet.id;
+        }
+
+        if (!finalPetId) {
+            throw new Error("Debe seleccionar o escribir el nombre de una mascota.");
+        }
+
         const aptData = {
             tenant_id: tenantId,
-            pet_id: document.getElementById('appt-pet-id').value,
+            pet_id: finalPetId,
             fecha_hora: document.getElementById('appt-datetime').value,
             motivo: document.getElementById('appt-motivo').value,
             estado: document.getElementById('appt-status').value
@@ -319,7 +360,7 @@ async function handleSaveAndNotify(e) {
             result = await supabase.from('appointments').insert(aptData).select('*, pets(nombre, clients(nombre))').single();
             if (result.error) throw result.error;
             showToast("Turno creado correctamente.", "success");
-            
+
             // Trigger WhatsApp for NEW appointments only, or conditionally
             const fecha = new Date(aptData.fecha_hora).toLocaleDateString();
             const hora = new Date(aptData.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
