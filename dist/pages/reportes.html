@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - VetFlow 2.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script type="module" crossorigin src="/assets/reportes-Sv2jwaWE.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabase-lXe-AwSI.js">
+  <link rel="modulepreload" crossorigin href="/assets/layout-y6UUTfZb.js">
+  <link rel="stylesheet" crossorigin href="/assets/layout-B538zDJG.css">
+  <link rel="stylesheet" crossorigin href="/assets/reportes-BHOukc3e.css">
+  <link rel="stylesheet" crossorigin href="/assets/styles-RQmc1D5R.css">
+</head>
+
+<body>
+    <div id="layout-wrapper">
+        <div id="app-content">
+
+            <!-- Header -->
+            <div class="content-header-premium">
+                <div class="header-main">
+                    <h1><i class="fas fa-chart-line"></i> Reportes</h1>
+                    <p>Analizá el rendimiento de tu negocio con reportes detallados por período.</p>
+                </div>
+            </div>
+
+            <!-- Selector de rango de fechas -->
+            <section class="report-date-bar" id="date-bar">
+                <div class="date-bar-inner">
+                    <div class="date-group">
+                        <label><i class="fas fa-calendar-alt"></i> Desde</label>
+                        <input type="date" id="date-from">
+                    </div>
+                    <div class="date-group">
+                        <label><i class="fas fa-calendar-alt"></i> Hasta</label>
+                        <input type="date" id="date-to">
+                    </div>
+                    <button class="btn btn-primary" id="btn-apply-dates">
+                        <i class="fas fa-sync-alt"></i> Aplicar
+                    </button>
+                    <div class="quick-ranges">
+                        <button class="quick-btn" data-range="7">7 días</button>
+                        <button class="quick-btn" data-range="30">30 días</button>
+                        <button class="quick-btn" data-range="90">90 días</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tabs de reportes -->
+            <nav class="report-tabs" id="report-tabs">
+                <!-- Las tabs se renderizan dinámicamente según el tipo de negocio -->
+            </nav>
+
+            <!-- Contenedor del reporte activo -->
+            <div class="report-panel" id="report-panel">
+                <div class="report-placeholder" id="report-placeholder">
+                    <i class="fas fa-chart-pie"></i>
+                    <p>Seleccioná un reporte para comenzar</p>
+                </div>
+                <!-- El contenido del reporte activo va aquí -->
+                <div id="report-content" style="display:none;"></div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

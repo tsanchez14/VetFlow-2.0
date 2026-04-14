@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Agenda - VetFlow 2.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .search-results-mini {
+            position: absolute;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: var(--shadow-heavy);
+            margin-top: 2px;
+        }
+
+        .search-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+        }
+
+        .search-item:hover {
+            background: #f0f7ff;
+            color: var(--primary);
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/appointments-BDm28dBk.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabase-lXe-AwSI.js">
+  <link rel="modulepreload" crossorigin href="/assets/layout-y6UUTfZb.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-sLR7WWXu.js">
+  <link rel="stylesheet" crossorigin href="/assets/layout-B538zDJG.css">
+  <link rel="stylesheet" crossorigin href="/assets/appointments-mh30Vq9p.css">
+  <link rel="stylesheet" crossorigin href="/assets/styles-RQmc1D5R.css">
+</head>
+
+<body>
+    <!-- Main Content -->
+    <div id="layout-wrapper">
+        <div id="app-content">
+            <div class="agenda-container">
+                <!-- Premium Header -->
+                <div class="agenda-controls">
+                    <div class="view-switcher">
+                        <button id="view-day-btn" class="view-btn active">📅 Hoy</button>
+                        <button id="view-week-btn" class="view-btn">🗓️ Semana</button>
+                    </div>
+
+                    <div class="agenda-navigation">
+                        <button class="btn btn-outline btn-sm" id="prev-btn" style="border:none;"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <span id="current-date-label">Cargando...</span>
+                        <button class="btn btn-outline btn-sm" id="next-btn" style="border:none;"><i
+                                class="fas fa-chevron-right"></i></button>
+                    </div>
+
+                    <button class="btn btn-primary" id="btn-nuevo-turno">
+                        <i class="fas fa-calendar-plus"></i> NUEVO TURNO
+                    </button>
+                </div>
+
+                <!-- Views Container -->
+                <div id="view-day" class="day-view-container">
+                    <div id="appointments-list" class="appointments-list">
+                        <!-- Card list via JS -->
+                    </div>
+                </div>
+
+                <div id="view-week" class="day-view-container" style="display: none;">
+                    <div id="weekly-grid" class="weekly-grid">
+                        <!-- Weekly columns via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Unificado (Final Versión "Magic Link") -->
+    <div id="modal-turno" class="modal">
+        <div class="modal-content" style="padding: 25px; max-width: 500px;">
+            <div class="modal-header" style="margin-bottom: 15px; padding-bottom: 10px;">
+                <h2 id="modal-turno-title" style="font-size: 1.3rem;">Agendar Turno</h2>
+                <button type="button" class="btn-close" onclick="closeModal('modal-turno')"><i
+                        class="fas fa-times"></i></button>
+            </div>
+
+            <form id="form-turno">
+                <input type="hidden" id="appointment-id">
+
+                <!-- Buscador de Dueño -->
+                <div class="form-group" id="group-search-owner" style="position: relative; margin-bottom: 12px;">
+                    <label><i class="fas fa-search"></i> Dueño (DNI o Nombre)</label>
+                    <input type="text" id="appt-owner-search" class="form-control" autocomplete="off"
+                        placeholder="Buscar cliente..." style="padding: 10px 14px;">
+                    <div id="owner-results" class="search-results-mini" style="display: none;"></div>
+                    <input type="hidden" id="appt-client-id" required>
+                </div>
+
+                <!-- Resumen de Cliente -->
+                <div id="client-summary"
+                    style="display: none; background: #f8fafc; padding: 10px 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e1effe;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p
+                                style="font-size: 0.65rem; font-weight: 800; color: var(--secondary); text-transform: uppercase;">
+                                PACIENTE & DUEÑO</p>
+                            <h3 id="display-owner-name" style="font-size: 1rem; color: var(--text-main);">-</h3>
+                        </div>
+                        <button type="button" id="btn-change-client"
+                            style="background:none; border:none; color:var(--primary); font-size:0.7rem; font-weight:700; cursor:pointer;">Cambiar</button>
+                    </div>
+                </div>
+
+                <!-- GRID: Mascota y Teléfono -->
+                <div class="form-grid" style="margin-top: 10px; gap: 10px;">
+                    <div class="form-group">
+                        <label><i class="fas fa-paw"></i> Mascota</label>
+                        <select id="appt-pet-id" class="form-select" disabled required
+                            style="padding: 10px; border-radius: 12px;">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Teléfono WhatsApp</label>
+                        <input type="text" id="appt-phone" class="form-control" placeholder="Ej: 1123456789"
+                            style="padding: 10px; border-radius: 12px;">
+                    </div>
+                </div>
+
+                <!-- Fecha y Hora -->
+                <div class="form-grid" style="margin-top: 10px; gap: 10px;">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> Fecha y Hora</label>
+                        <input type="datetime-local" id="appt-datetime" class="form-control" required
+                            style="padding: 10px; border-radius: 12px;">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-tasks"></i> Estado</label>
+                        <select id="appt-status" class="form-select" style="padding: 10px; border-radius: 12px;">
+                            <option value="pendiente">Pendiente</option>
+                            <option value="confirmado">Confirmado</option>
+                            <option value="atendido">Atendido</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Motivo -->
+                <div class="form-group" style="margin-top: 10px; margin-bottom: 12px;">
+                    <label><i class="fas fa-comment-medical"></i> Motivo</label>
+                    <input type="text" id="appt-motivo" class="form-control" required
+                        placeholder="Motivo de la consulta" style="padding: 10px; border-radius: 12px;">
+                </div>
+
+                <!-- Alerta Post-Atención -->
+                <div id="attended-actions"
+                    style="display: none; background: #ecfdf5; padding: 10px; border-radius: 12px; margin: 10px 0; border: 1px solid #10b981;">
+                    <div
+                        style="display: flex; align-items: center; gap: 8px; color: #047857; font-size: 0.8rem; font-weight: 700;">
+                        <i class="fas fa-check-circle"></i>
+                        <span>¡Atendido!</span>
+                        <button type="button" class="btn btn-primary btn-sm" id="btn-crear-consulta"
+                            style="margin-left: auto; font-size: 0.65rem; padding: 5px 10px;">
+                            ABRIR HISTORIA CLÍNICA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botón Principal "Todo en Uno" -->
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 20px;">
+                    <button type="submit" id="btn-submit-turno" class="btn-whatsapp-save"
+                        style="width: 100%; padding: 16px; border-radius: 16px;">
+                        <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> GUARDAR Y ENVIAR POR WHATSAPP
+                    </button>
+
+                    <button type="button" onclick="closeModal('modal-turno')"
+                        style="background: none; border: none; color: #94a3b8; font-size: 0.8rem; width: 100%; margin-top: 10px; cursor: pointer;">
+                        Cerrar sin guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+    </script>
+</body>
+
+</html>
+

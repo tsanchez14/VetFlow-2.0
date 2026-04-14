@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VetFlow - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            padding: 40px 5%;
+            background: #f1f5f9;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow-soft);
+            padding: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 2px solid #edf2f7;
+            color: var(--text-muted);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-activo {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-trial {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-vencido {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .status-suspendido {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .note-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        .note-date {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/admin-CWJR3vH-.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabase-lXe-AwSI.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-sLR7WWXu.js">
+  <link rel="stylesheet" crossorigin href="/assets/styles-RQmc1D5R.css">
+</head>
+
+<body>
+
+    <div class="admin-header">
+        <h1>Centro de Control <span style="color: var(--primary)">VetFlow</span></h1>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div id="admin-info" style="font-weight: 600;">Comprobando acceso...</div>
+            <button id="logout-btn" class="btn btn-outline btn-sm">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+
+    <div class="admin-card">
+        <h3>Gestión de Clientes (Tenants)</h3>
+        <table id="tenants-table">
+            <thead>
+                <tr>
+                    <th>Negocio</th>
+                    <th>Tipo</th>
+                    <th>Owner Email</th>
+                    <th>Registro</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tenants-body">
+                <!-- Data via JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal Notas -->
+    <div id="notes-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modal-tenant-name">Notas del Tenant</h3>
+            <div id="notes-list" style="margin: 20px 0; max-height: 300px; overflow-y: auto;">
+                <!-- Notas aquí -->
+            </div>
+            <textarea id="new-note" placeholder="Agregar nota interna..."
+                style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; height: 100px;"></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="save-note" class="btn btn-primary btn-sm">Guardar Nota</button>
+                <button id="close-modal" class="btn btn-outline btn-sm">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

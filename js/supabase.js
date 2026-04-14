@@ -52,7 +52,6 @@ supabase.auth.onAuthStateChange((event, session) => {
     const isPublicPage = currentPath === '/' ||
         currentPath.endsWith('index.html') ||
         currentPath.endsWith('login.html');
-    @
     // Obtener el basePath seguro de manera dinámica (soporta subdominios e.g. GitHub Pages)
     let basePath = '/';
     if (currentPath.includes('/pages/')) {

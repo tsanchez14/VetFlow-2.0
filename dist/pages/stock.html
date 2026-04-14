@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Stock e Inventario - VetFlow 2.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script type="module" crossorigin src="/assets/stock-CafgV_hn.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabase-lXe-AwSI.js">
+  <link rel="modulepreload" crossorigin href="/assets/layout-y6UUTfZb.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-sLR7WWXu.js">
+  <link rel="stylesheet" crossorigin href="/assets/layout-B538zDJG.css">
+  <link rel="stylesheet" crossorigin href="/assets/stock-BQvCsdus.css">
+  <link rel="stylesheet" crossorigin href="/assets/styles-RQmc1D5R.css">
+</head>
+
+<body>
+    <div id="layout-wrapper">
+        <div id="app-content">
+            <div class="content-header-premium">
+                <div class="header-main">
+                    <h1><i class="fas fa-boxes"></i> Inventario & Stock</h1>
+                    <p>Gestioná tus productos, alertas de stock mínimo y trazabilidad de movimientos.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openProductModal()">
+                        <i class="fas fa-plus"></i> NUEVO PRODUCTO
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard de Alertas Rápidas -->
+            <div class="stock-summary-cards">
+                <div class="summary-card">
+                    <i class="fas fa-exclamation-triangle warning"></i>
+                    <div class="summary-info">
+                        <span class="count" id="low-stock-count">0</span>
+                        <span class="label">Productos bajo mínimo</span>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <i class="fas fa-box-open info"></i>
+                    <div class="summary-info">
+                        <span class="count" id="total-products-count">0</span>
+                        <span class="label">Total de Productos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra de Filtros -->
+            <section class="section-filters-premium">
+                <div class="filters-flex">
+                    <div class="search-field">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-product" placeholder="Buscar por nombre o código...">
+                    </div>
+                    <div class="category-field">
+                        <select id="filter-category">
+                            <option value="">Todas las categorías</option>
+                            <option value="alimentos">Alimentos</option>
+                            <option value="farmacia">Farmacia</option>
+                            <option value="accesorios">Accesorios</option>
+                            <option value="higiene">Higiene</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Listado de Productos (Tabla Premium) -->
+            <section class="section-product-list">
+                <div class="table-container-glass">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Stock Actual</th>
+                                <th>Stock Mínimo</th>
+                                <th>Precio Venta</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-list-body">
+                            <!-- Se llena dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Modal Producto (Crear/Editar) -->
+    <div id="modal-producto" class="modal">
+        <div class="modal-content-premium">
+            <div class="modal-header">
+                <h2 id="modal-title">Gestión de Producto</h2>
+                <button class="btn-close" onclick="closeModal('modal-producto')"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-producto" class="premium-form">
+                <input type="hidden" id="prod-id">
+                <div class="form-grid">
+                    <div class="form-group-premium full">
+                        <label>Nombre del Producto</label>
+                        <input type="text" id="prod-nombre" required placeholder="Ej: Bolsa Alimento Perro Adulto 15kg">
+                    </div>
+                    <div class="form-group-premium">
+                        <label>Categoría</label>
+                        <select id="prod-categoria" required>
+                            <option value="alimentos">Alimentos</option>
+                            <option value="farmacia">Farmacia</option>
+                            <option value="accesorios">Accesorios</option>
+                            <option value="higiene">Higiene</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group-premium">
+                        <label>Unidad de Medida</label>
+                        <input type="text" id="prod-unidad" placeholder="Ej: Unidad, Kg, Ml">
+                    </div>
+                    <div class="form-group-premium">
+                        <label>Stock Mínimo</label>
+                        <input type="number" id="prod-minimo" value="0">
+                    </div>
+                    <div class="form-group-premium">
+                        <label>Precio Costo</label>
+                        <input type="number" step="0.01" id="prod-costo" value="0">
+                    </div>
+                    <div class="form-group-premium">
+                        <label>Precio Venta</label>
+                        <input type="number" step="0.01" id="prod-venta" value="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary btn-full"><i class="fas fa-save"></i> GUARDAR
+                        PRODUCTO</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Movimientos & Ajuste -->
+    <div id="modal-movimientos" class="modal">
+        <div class="modal-content-premium large">
+            <div class="modal-header">
+                <h2>Historial de Movimientos: <span id="mov-prod-nombre"></span></h2>
+                <button class="btn-close" onclick="closeModal('modal-movimientos')"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="mov-content-layout">
+                <div class="mov-form-side">
+                    <h3><i class="fas fa-tools"></i> Ajuste Manual</h3>
+                    <form id="form-ajuste" class="premium-form">
+                        <div class="form-group-premium">
+                            <label>Tipo de Movimiento</label>
+                            <select id="ajuste-tipo" required>
+                                <option value="entrada">Entrada (Compra/Reposición)</option>
+                                <option value="ajuste">Ajuste (Corrección/Diferencia)</option>
+                            </select>
+                        </div>
+                        <div class="form-group-premium">
+                            <label>Cantidad</label>
+                            <input type="number" step="0.1" id="ajuste-cantidad" required>
+                        </div>
+                        <div class="form-group-premium">
+                            <label>Observación</label>
+                            <textarea id="ajuste-obs" rows="3" placeholder="Motivo del ajuste..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full"><i class="fas fa-save"></i> REGISTRAR
+                            MOVIMIENTO</button>
+                    </form>
+                </div>
+                <div class="mov-list-side">
+                    <h3><i class="fas fa-history"></i> Línea de Tiempo</h3>
+                    <div id="movimientos-list" class="movements-timeline">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+        // Las demas funciones se manejan en stock.js con window.openModal etc
+    </script>
+</body>
+
+</html>
