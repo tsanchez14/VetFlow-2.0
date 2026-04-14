@@ -68,6 +68,16 @@ supabase.auth.onAuthStateChange((event, session) => {
             window.location.href = basePath + 'login.html';
         }
     } else if (session) {
+        // Redirigir al dashboard SOLO si el usuario está en el LOGIN
+        // Esto permite que la Landing Page (index.html) sea accesible aunque haya sesión.
+        if (currentPath.endsWith('login.html')) {
+            if (session.user.email === 'tsanchez.scz@gmail.com') {
+                window.location.href = basePath + 'admin/index.html';
+            } else {
+                window.location.href = basePath + 'pages/dashboard.html';
+            }
+        }
+
         // Protección de rutas cruzadas (Admin tratando de entrar a Pages o Usuario tratando de entrar a Admin)
         if (session.user.email === 'tsanchez.scz@gmail.com' && currentPath.includes('/pages/')) {
             window.location.href = basePath + 'admin/index.html';
