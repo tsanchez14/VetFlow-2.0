@@ -49,8 +49,10 @@ export async function getTenantTipo() {
 // Global Auth State Listener
 supabase.auth.onAuthStateChange((event, session) => {
     const currentPath = window.location.pathname;
-    const isPublicPage = !currentPath.includes('/pages/') && !currentPath.includes('/admin/');
-
+    const isPublicPage = currentPath === '/' ||
+        currentPath.endsWith('index.html') ||
+        currentPath.endsWith('login.html');
+    @
     // Obtener el basePath seguro de manera dinámica (soporta subdominios e.g. GitHub Pages)
     let basePath = '/';
     if (currentPath.includes('/pages/')) {
@@ -67,21 +69,11 @@ supabase.auth.onAuthStateChange((event, session) => {
             window.location.href = basePath + 'login.html';
         }
     } else if (session) {
-        // Si hay una sesión activa
-        if (isPublicPage) {
-            // Si está en el login/index, guiarlo a su respectiva página privada
-            if (session.user.email === 'tsanchez.scz@gmail.com') {
-                window.location.href = basePath + 'admin/index.html';
-            } else {
-                window.location.href = basePath + 'pages/dashboard.html';
-            }
-        } else {
-            // Protección de rutas cruzadas (Admin tratando de entrar a Pages o Usuario tratando de entrar a Admin)
-            if (session.user.email === 'tsanchez.scz@gmail.com' && currentPath.includes('/pages/')) {
-                window.location.href = basePath + 'admin/index.html';
-            } else if (session.user.email !== 'tsanchez.scz@gmail.com' && currentPath.includes('/admin/')) {
-                window.location.href = basePath + 'pages/dashboard.html';
-            }
+        // Protección de rutas cruzadas (Admin tratando de entrar a Pages o Usuario tratando de entrar a Admin)
+        if (session.user.email === 'tsanchez.scz@gmail.com' && currentPath.includes('/pages/')) {
+            window.location.href = basePath + 'admin/index.html';
+        } else if (session.user.email !== 'tsanchez.scz@gmail.com' && currentPath.includes('/admin/')) {
+            window.location.href = basePath + 'pages/dashboard.html';
         }
     }
 });

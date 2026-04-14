@@ -12,17 +12,6 @@
 
 <body>
 
-    <!-- Redirección si ya hay sesión -->
-    <script type="module">
-        import { supabase } from './js/supabase.js';
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                window.location.href = 'pages/dashboard.html';
-            }
-        }
-        checkSession();
-    </script>
 
     <nav class="navbar">
         <div class="logo-container">
